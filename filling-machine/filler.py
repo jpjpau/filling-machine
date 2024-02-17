@@ -78,6 +78,8 @@ SM_CO_GCO_mould = 1.2
 H_GPH_mould = 1.02
 Essent_Mozz_Mould = 1.2
 Essent_Ched_Mould = 1.2
+empty_image = 0
+full_image = 0
 
 motor_start_time = 0
 
@@ -216,15 +218,23 @@ def get_batch(var1):
 tabControl.bind('<<NotebookTabChanged>>', get_batch)
 
 def take_picture(stage):
+    global empty_image, full_image
+    timestamp = now.strftime("%Y-%m-%d %H-%M-%S")
+    path = '/home/pi/' + batch_number.get() + ' - ' + timestamp + ' - ' + stage + '.jpg'
+    if stage == "empty":
+        empty_image = path
+    else:
+        full_image = path
     thread = threading.Thread(target=picture_thread)
-    thread.start(stage)
+    thread.start(path)
 
-def picture_thread(stage):
+def picture_thread(path):
     global batch_number, cam
     now = datetime.now()
     timestamp = now.strftime("%Y-%m-%d %H-%M-%S")
+    #path = '/home/pi/' + batch_number.get() + ' - ' + timestamp + stage + '.jpg'
     ret, image = cam.read()
-    cv2.imwrite('/home/pi/' + batch_number.get() + ' - ' + timestamp + '.jpg', image)
+    cv2.imwrite(path, image)
     # cv2.imwrite('/home/pi/' + timestamp + '.jpg', image)
     # cv2.imwrite('/home/pi/testimage.jpg', image)
     path = '/home/pi/' + batch_number.get() + ' - ' + timestamp + stage + '.jpg'
@@ -411,7 +421,7 @@ def read_weight():
 
 
 def cheese_filler():
-    global kill_all, cpu, csv_file, high_speed, low_speed, desired_volume, actual_weight, display_weight, motor_start_time, filling_status, start_time, mould_weight, previous_label, actual_mould_weight, mqtt_client, vfd_state, vfd_speed, batch_number, valve1, valve2
+    global kill_all, cpu, csv_file, high_speed, low_speed, desired_volume, actual_weight, display_weight, motor_start_time, filling_status, start_time, mould_weight, previous_label, actual_mould_weight, mqtt_client, vfd_state, vfd_speed, batch_number, valve1, valve2, empty_image, full_image
     motor_stop_time = 0
     start=5
     stop=6
