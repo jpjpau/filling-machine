@@ -828,5 +828,3 @@ cheese_maker = threading.Thread(target=cheese_filler)
 cheese_maker.start()
 # Run forever!
 root.mainloop()
-# test comment
-# test comment 2
