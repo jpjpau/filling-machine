@@ -51,13 +51,17 @@ root.setLevel(logging.INFO)
 root.setLevel(os.environ.get("LOGLEVEL", "INFO"))
 root.addHandler(syslogging)
 
+# MONGODB Setup
+from pymongo import MongoClient
+# Connect to MongoDB
+client = MongoClient('192.168.15.70', 27017)
+db = client['cheese_db']
+cheese_records = db['pours']
+
 vfd_state = 6
 vfd_speed = 0
-
 valve1, valve2 = 0, 0
-
 publish_weight_timer = 0
-
 Food_Service = 1.5
 Brie = 2.11
 SM_CO_GCO = 1.35 # added 50g 24th Feb
@@ -68,7 +72,6 @@ focus = "Clean"
 actual_weight = 0
 start_time = time.time()
 mould_weight = 1.2
-
 Food_Service_mould = 1.2
 Brie_mould = 1.3
 SM_CO_GCO_mould = 1.2
@@ -212,11 +215,11 @@ def get_batch(var1):
 #button_popup = tk.Button(cleaningtab, text="Batch", font=("Arial", 45), command=get_batch)
 tabControl.bind('<<NotebookTabChanged>>', get_batch)
 
-def take_picture():
+def take_picture(stage):
     thread = threading.Thread(target=picture_thread)
-    thread.start()
+    thread.start(stage)
 
-def picture_thread():
+def picture_thread(stage):
     global batch_number, cam
     now = datetime.now()
     timestamp = now.strftime("%Y-%m-%d %H-%M-%S")
@@ -224,9 +227,14 @@ def picture_thread():
     cv2.imwrite('/home/pi/' + batch_number.get() + ' - ' + timestamp + '.jpg', image)
     # cv2.imwrite('/home/pi/' + timestamp + '.jpg', image)
     # cv2.imwrite('/home/pi/testimage.jpg', image)
+    path = '/home/pi/' + batch_number.get() + ' - ' + timestamp + stage + '.jpg'
+    if stage == "empty":
+        empty_image = path
+    else:
+        full_image = path
     try:
         ret, image = cam.read()
-        cv2.imwrite('/home/pi/' + batch_number.get() + ' - ' + timestamp + '.jpg', image)
+        cv2.imwrite(path, image)
     except:
         logging.exception("Webcam error")
 
@@ -427,7 +435,7 @@ def cheese_filler():
             elif current_weight > mould_weight * 0.7 and current_weight < mould_weight * 1.3 : # a mould is on the scale
                 if mould_detected == 0:
                     mould_detected = time.time()
-                    take_picture()
+                    #take_picture("empty")
                 elif time.time() - mould_detected > 2 and len(mould_weights) > 20:
                     if current_weight > mould_weight * 0.7 and current_weight < mould_weight * 1.3 : # after 2 seconds, check the weight again. If the mould is still there, start filling
                         filling_status = 1
@@ -438,7 +446,7 @@ def cheese_filler():
                         ", Filling Status = " + str(filling_status) + \
                         ", Flavour = " + selected.get() + \
                         ", Batch Number = " + batch_number.get())
-                        take_picture()
+                        take_picture("empty")
                         if selected.get() == "Brie":
                             valve1, valve2 = 1, 1
                             logging.info("Valves Open both valves")
@@ -527,7 +535,7 @@ def cheese_filler():
                 ", Filling Status = " + str(filling_status) + \
                 ", Flavour = " + selected.get() + \
                 ", Batch Number = " + batch_number.get())
-                take_picture()
+                #take_picture("full")
             else:
                 filling_status = 5
                 mould2_fill_time = 0
@@ -570,6 +578,25 @@ def cheese_filler():
                 ", Filling Status = " + str(filling_status) + \
                 ", Flavour = " + selected.get() + \
                 ", Batch Number = " + batch_number.get())
+
+                take_picture("full")
+                time.sleep(0.2)
+                cheese_data = {
+                    'pour_time': now.strftime("%Y-%m-%d %H-%M-%S"),
+                    'batch': batch_number.get(),
+                    'flavour': publication_year,
+                    'mould_weight': actual_mould_weight,
+                    'desired_weight': desired_volume.get(),
+                    'pour_1_weight': mould1_final,
+                    'pour_1_fill_time': mould1_fill_time
+                    'pour_2_weight': mould2_final,
+                    'pour_2_fill_time': mould2_fill_time
+                    'high_speed': high_speed.get(),
+                    'low_speed': low_speed.get(),
+                    'empty_image': empty_image_path ,
+                    'full_image': full_image_path
+                }
+                cheese_records.insert_one(cheese_data)
 
         elif filling_status == 6:
             filling_status = 7
@@ -628,7 +655,7 @@ def cheese_filler():
                         ", Filling Status = " + str(filling_status) + \
                         ", Flavour = " + selected.get() + \
                         ", Batch Number = " + batch_number.get())
-                        take_picture()
+                        
             else:
                 if motor_stop_time != 0 and time.time() - motor_stop_time > 0.5:
                     valve1, valve2 = 0, 1
