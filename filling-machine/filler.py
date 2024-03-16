@@ -54,7 +54,7 @@ root.addHandler(syslogging)
 
 vfd_state = 6
 vfd_speed = 0
-
+tare = 0
 valve1, valve2 = 0, 0
 
 publish_weight_timer = 0
@@ -544,7 +544,7 @@ def cheese_filler():
             
                     
         elif filling_status == 5:
-            if actual_weight < mould_weight+tare: # The completed moulds have been removed from the machine
+            if actual_weight < mould_weight: # The completed moulds have been removed from the machine
                 mould_weights = []
                 now = datetime.now()
                 dt_string = now.strftime("%Y-%m-%d %H-%M-%S")
@@ -556,6 +556,7 @@ def cheese_filler():
                 mould_detected = 0
                 filling_status = 0
                 actual_mould_weight = 0
+                tare = 0
                 try:
                     mqtt_client.publish("FillingMachine/Completed-Mould1FinalWeight", mould1_final)
                     mqtt_client.publish("FillingMachine/Completed-Mould1FillTime", mould1_fill_time)
@@ -728,7 +729,7 @@ def csv_record(csv_data):
             #writer.close()
     
 def modbus_thread():
-    global vfd_state, vfd_speed, lc_que, valve1, valve2, read_count, measurements_list, measurements_start, display_weight, actual_mould_weight, actual_weight, publish_weight_timer
+    global vfd_state, vfd_speed, lc_que, valve1, valve2, read_count, measurements_list, measurements_start, tare, display_weight, actual_mould_weight, actual_weight, publish_weight_timer
     current_state = current_speed = 0
     # valve_time = time.time()
     valve1_state = valve1
@@ -815,7 +816,7 @@ def modbus_thread():
             except Exception as e:
                 # print("load cell clash")
                 logging.exception("LOADCELL MODBUS Load Cell Read Error - " + str(e))
-            calculated_weight = actual_weight - actual_mould_weight
+            calculated_weight = actual_weight - actual_mould_weight - tare
             display_weight.set(round(calculated_weight,3))
             mqtt_client.publish("FillingMachine/lc_reading", lc_reading/1000)
             mqtt_client.publish("FillingMachine/actual_weight", actual_weight)
