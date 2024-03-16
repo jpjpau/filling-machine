@@ -544,7 +544,7 @@ def cheese_filler():
             
                     
         elif filling_status == 5:
-            if actual_weight < mould_weight: # The completed moulds have been removed from the machine
+            if actual_weight < mould_weight+tare: # The completed moulds have been removed from the machine
                 mould_weights = []
                 now = datetime.now()
                 dt_string = now.strftime("%Y-%m-%d %H-%M-%S")
