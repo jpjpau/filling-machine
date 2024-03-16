@@ -398,9 +398,9 @@ measurements_start = time.time()
 read_count = 0
 scale_calibration = []
 
-def read_weight():
-    global read_count, measurements_list, measurements_start, display_weight, actual_mould_weight, actual_weight, publish_weight_timer
-    return(actual_weight)
+#def read_weight():
+#    global read_count, measurements_list, measurements_start, display_weight, actual_mould_weight, actual_weight, publish_weight_timer
+#    return(actual_weight)
 
 
 def cheese_filler():
@@ -417,24 +417,24 @@ def cheese_filler():
         if tabControl.tab(tabControl.select(), "text") != "Filling":
             continue
         time.sleep(0.01)
-        current_weight = read_weight()
+        current_weight = actual_weight
         now = datetime.now()
 
         if filling_status == 0:
-            if current_weight > 0 and current_weight < mould_weight * 0.69: # nothing is on the scale
+            if actual_weight > 0 and actual_weight < mould_weight * 0.69: # nothing is on the scale
                 filling_status = 0
                 mould_detected = 0
                 mould_weights.clear()
-            elif current_weight > mould_weight * 0.7 and current_weight < mould_weight * 1.3 : # a mould is on the scale
+            elif actual_weight > mould_weight * 0.7 and actual_weight < mould_weight * 1.3 : # a mould is on the scale
                 if mould_detected == 0:
                     mould_detected = time.time()
                     take_picture()
                 elif time.time() - mould_detected > 2 and len(mould_weights) > 20:
-                    if current_weight > mould_weight * 0.7 and current_weight < mould_weight * 1.3 : # after 2 seconds, check the weight again. If the mould is still there, start filling
+                    if actual_weight > mould_weight * 0.7 and actual_weight < mould_weight * 1.3 : # after 2 seconds, check the weight again. If the mould is still there, start filling
                         filling_status = 1
                         actual_mould_weight = sum(mould_weights) / len(mould_weights)
                         logging.info("Filler Time = " + now.strftime("%Y-%m-%d %H-%M-%S") + \
-                        " Current Weight = " + str(current_weight) + \
+                        " Current Weight = " + str(actual_weight) + \
                         ", Mould Weight = " + str(actual_mould_weight) + \
                         ", Filling Status = " + str(filling_status) + \
                         ", Flavour = " + selected.get() + \
@@ -450,7 +450,7 @@ def cheese_filler():
                     else:
                         mould_detected = 0
                 else:
-                    mould_weights.append(current_weight)
+                    mould_weights.append(actual_weight)
                     # waiting waiting for 2 seconds since mould detected
             else:
                 filling_status = 0
@@ -459,7 +459,7 @@ def cheese_filler():
         elif filling_status == 1:
             filling_status = 2
             logging.info("Filler Time = " + now.strftime("%Y-%m-%d %H-%M-%S") + \
-            " Current Weight = " + str(current_weight) + \
+            " Current Weight = " + str(actual_weight) + \
             ", Mould Weight = " + str(actual_mould_weight) + \
             ", Filling Status = " + str(filling_status) + \
             ", Flavour = " + selected.get() + \
@@ -471,24 +471,24 @@ def cheese_filler():
                 logging.info("Start VFD at speed " + str(high_speed.get()))
 
         elif filling_status == 2:
-            if current_weight - actual_mould_weight < float(desired_volume.get()) - 0.2:
+            if actual_weight - actual_mould_weight < float(desired_volume.get()) - 0.2: #keep filling at high speed
                 filling_status = 2
                 vfd_state = start
                 vfd_speed = int(high_speed.get())
-            elif current_weight - actual_mould_weight > float(desired_volume.get()) - 0.2:
+            elif actual_weight - actual_mould_weight > float(desired_volume.get()) - 0.2: #set filling speed to low
                 filling_status = 3
                 vfd_state = start
                 vfd_speed = int(low_speed.get())
                 logging.info("Slow VFD to speed " + str(low_speed.get()))
                 logging.info("Filler Time = " + now.strftime("%Y-%m-%d %H-%M-%S") + \
-                " Current Weight = " + str(current_weight) + \
+                " Current Weight = " + str(actual_weight) + \
                 ", Mould Weight = " + str(actual_mould_weight) + \
                 ", Filling Status = " + str(filling_status) + \
                 ", Flavour = " + selected.get() + \
                 ", Batch Number = " + batch_number.get())
                 
         elif filling_status == 3:
-            if current_weight - actual_mould_weight > float(desired_volume.get()):
+            if actual_weight - actual_mould_weight > float(desired_volume.get()):
                 vfd_state = stop
                 vfd_speed = 0
                 if motor_stop_time == 0:
@@ -498,7 +498,8 @@ def cheese_filler():
                     valve1, valve2 = 0, 0
                     logging.info("Valves Close both valves")
                     if len(final_mould_weight_list) < 10:
-                        final_mould_weight_list.append(current_weight - actual_mould_weight)
+                        final_mould_weight_list.append(actual_weight - actual_mould_weight)
+                        logging.info("Measurement Mould 1 reading " + len(final_mould_weight_list) + " is " + actual_weight)
                     else:
                         filling_status = 4
                         mould1_final = sum(final_mould_weight_list) / len(final_mould_weight_list)
@@ -507,7 +508,7 @@ def cheese_filler():
                         logging.info("FillTime Mould 1 Fill Time = " + str(mould1_fill_time))
                         previous_label.set(str(round(mould1_final,3)))
                         logging.info("Filler Time = " + now.strftime("%Y-%m-%d %H-%M-%S") + \
-                        " Current Weight = " + str(current_weight) + \
+                        " Current Weight = " + str(actual_weight) + \
                         ", Mould Weight = " + str(actual_mould_weight) + \
                         ", Filling Status = " + str(filling_status) + \
                         ", Flavour = " + selected.get() + \
@@ -543,7 +544,7 @@ def cheese_filler():
             
                     
         elif filling_status == 5:
-            if current_weight < mould_weight:
+            if actual_weight < mould_weight: # The completed moulds have been removed from the machine
                 mould_weights = []
                 now = datetime.now()
                 dt_string = now.strftime("%Y-%m-%d %H-%M-%S")
@@ -573,23 +574,23 @@ def cheese_filler():
                 ", Flavour = " + selected.get() + \
                 ", Batch Number = " + batch_number.get())
 
-        elif filling_status == 6:
+        elif filling_status == 6: # ready to start filling the second mould
             filling_status = 7
             valve1, valve2 = 0, 1
             logging.info("Open valve 2")
-            actual_mould_weight = current_weight
+            tare = current_weight # this is the weight of the tray, full mould 1 and empty mould 2
             motor_start_time = time.time()
             vfd_state = start
             vfd_speed = int(high_speed.get())
             logging.info("Start VFD at speed " + str(high_speed.get()))
             logging.info("Filler Time = " + str(time.time()) + \
-            " Current Weight = " + str(current_weight) + \
+            " Current Weight = " + str(actual_mould_weight) + \
             ", Filling Status = " + str(filling_status) + \
             ", Flavour = " + selected.get() + \
             ", Batch Number = " + batch_number.get())
 
         elif filling_status == 7:
-            if current_weight - actual_mould_weight < float(desired_volume.get()) - 0.2:
+            if actual_weight - tare < float(desired_volume.get()) - 0.2:
                 vfd_state = start
                 vfd_speed = int(high_speed.get())
             else:
@@ -598,15 +599,15 @@ def cheese_filler():
                 logging.info("Slow VFD to speed " + str(low_speed.get()))
                 filling_status = 8
                 logging.info("Filler Time = " + now.strftime("%Y-%m-%d %H-%M-%S") + \
-                " Current Weight = " + str(current_weight) + \
-                ", Mould Weight = " + str(actual_mould_weight) + \
+                " Current Weight = " + str(actual_weight) + \
+                ", Mould Weight = " + str(tare) + \
                 ", Filling Status = " + str(filling_status) + \
                 ", Flavour = " + selected.get() + \
                 ", Batch Number = " + batch_number.get())
                 
         elif filling_status == 8:
             
-            if current_weight - actual_mould_weight > float(desired_volume.get()):
+            if actual_weight - tare > float(desired_volume.get()):
                 vfd_state = stop
                 vfd_speed = 0
                 if motor_stop_time == 0:
@@ -616,7 +617,7 @@ def cheese_filler():
                     valve1, valve2 = 0, 0
                     logging.info("Close both valves")
                     if len(final_mould_weight_list) < 10:
-                        final_mould_weight_list.append(current_weight - actual_mould_weight)
+                        final_mould_weight_list.append(actual_weight - tare)
                     else:
                         mould2_final = sum(final_mould_weight_list) / len(final_mould_weight_list)
                         previous_label.set(previous_label.get() + ", " + str(round(mould2_final,3)))
@@ -625,8 +626,8 @@ def cheese_filler():
                         logging.info("FillTime Mould 2 Fill Time = " + str(mould2_fill_time))
                         filling_status = 9
                         logging.info("Filler Time = " + now.strftime("%Y-%m-%d %H-%M-%S") + \
-                        " Current Weight = " + str(current_weight) + \
-                        ", Mould Weight = " + str(actual_mould_weight) + \
+                        " Current Weight = " + str(actual_weight) + \
+                        ", Mould Weight = " + str(tare) + \
                         ", Filling Status = " + str(filling_status) + \
                         ", Flavour = " + selected.get() + \
                         ", Batch Number = " + batch_number.get())
