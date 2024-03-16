@@ -25,7 +25,7 @@ import os
 import cv2
 from os.path import exists
 from collections import deque 
-que_length = 10
+que_length = 5
 lc_que = deque([0]*que_length,que_length) 
 
 try:
@@ -46,7 +46,7 @@ csv_file.writerow(header)
 
 kill_all = False
 
-syslogging = logging.handlers.SysLogHandler(address=("192.168.15.70", 1514))
+syslogging = logging.handlers.SysLogHandler(address=("192.168.201.72", 1514))
 root = logging.getLogger()
 root.setLevel(logging.INFO)
 root.setLevel(os.environ.get("LOGLEVEL", "INFO"))
@@ -809,7 +809,7 @@ def modbus_thread():
                 for i in range(que_length): 
                     av_sum = av_sum + lc_que[i]
                 actual_weight = (av_sum / que_length) / 1000
-                #logging.info(str(lc_que) + "Calculated Value = " + str(actual_weight))
+                logging.info(str(lc_que) + "Calculated Value = " + str(actual_weight))
             except Exception as e:
                 # print("load cell clash")
                 logging.exception("LOADCELL MODBUS Load Cell Read Error - " + str(e))
