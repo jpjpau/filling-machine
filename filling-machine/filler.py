@@ -424,7 +424,7 @@ def cheese_filler():
             if current_weight > 0 and current_weight < mould_weight * 0.69: # nothing is on the scale
                 filling_status = 0
                 mould_detected = 0
-                mould_weights = []
+                mould_weights.clear()
             elif current_weight > mould_weight * 0.7 and current_weight < mould_weight * 1.3 : # a mould is on the scale
                 if mould_detected == 0:
                     mould_detected = time.time()
@@ -451,6 +451,7 @@ def cheese_filler():
                         mould_detected = 0
                 else:
                     mould_weights.append(current_weight)
+                    # waiting waiting for 2 seconds since mould detected
             else:
                 filling_status = 0
                 mould_detected = 0
