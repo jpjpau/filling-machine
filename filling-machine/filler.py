@@ -1,8 +1,8 @@
 # This script has been split into multiple files
 # Filling-MODBUS.py handles all the MODBUS creation tasks as well as MODBUS messaging
 
-# influxdb api nQ7wJ20hv3kWwLVPeV6RDstRgRPnx4wMsG58ILw75Ak30qXwoCOwSwRtERfKhCW8KHIsMEEyae-ZbjqujQQnAw==
-# sA91iKW50uVu7zJ4VCShP39qJDrHQh9vmhJzqE68D5CkKta31RMSaOIXd_ayuKdNjrb9bSq9CrV9oYLN_RyI6A==
+# influx operator API token: fC8usMqhJIQGLUaQnhdUs9O7a-s9Ca8_mDNeaCI5lW0JXaj4nvLz_iqUd66YeeOhgJX80P0l2-NteNK3VJKu6w==
+# test commit
 
 import modbus
 import tkinter as tk
@@ -55,7 +55,7 @@ root.addHandler(syslogging)
 from pymongo import MongoClient
 # Connect to MongoDB
 client = MongoClient('192.168.15.70', 27017)
-db = client['cheese_db']
+db = client['cheese']
 cheese_records = db['pours']
 
 vfd_state = 6
