@@ -816,7 +816,7 @@ def modbus_thread():
             calculated_weight = actual_weight - actual_mould_weight
             display_weight.set(round(calculated_weight,3))
             mqtt_client.publish("FillingMachine/lc_reading", lc_reading/1000)
-            mqtt_client.publish("FillingMachine/lc_reading", actual_weight)
+            mqtt_client.publish("FillingMachine/actual_weight", actual_weight)
         else:
             time.sleep(0.01)   
     modbus.turny_boi.write_register(0x1E01, 0)
