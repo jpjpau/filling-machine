@@ -499,7 +499,7 @@ def cheese_filler():
                     logging.info("Valves Close both valves")
                     if len(final_mould_weight_list) < 10:
                         final_mould_weight_list.append(actual_weight - actual_mould_weight)
-                        logging.info("Measurement Mould 1 reading " + len(final_mould_weight_list) + " is " + actual_weight)
+                        logging.info("Measurement Mould 1 reading " + len(final_mould_weight_list) + " is " + str(actual_weight))
                     else:
                         filling_status = 4
                         mould1_final = sum(final_mould_weight_list) / len(final_mould_weight_list)
