@@ -29,5 +29,5 @@ def setup_modbus(mb_address, port, timeout, baudrate, parity):
 
 ##### MODBUS SETUP #####
 turny_boi = setup_modbus(2, 1, 0.2, 19200, "even")
-load_cell = setup_modbus(1, 0, 0.2, 9600, "none")
+load_cell = setup_modbus(1, 0, 0.2, 19200, "none")
 valves = setup_modbus(3, 0, 0.4, 9600, "none")

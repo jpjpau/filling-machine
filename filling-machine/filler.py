@@ -579,7 +579,7 @@ def cheese_filler():
             filling_status = 7
             valve1, valve2 = 0, 1
             logging.info("Open valve 2")
-            tare = current_weight # this is the weight of the tray, full mould 1 and empty mould 2
+            tare = actual_weight # this is the weight of the tray, full mould 1 and empty mould 2
             motor_start_time = time.time()
             vfd_state = start
             vfd_speed = int(high_speed.get())
