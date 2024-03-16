@@ -404,7 +404,7 @@ scale_calibration = []
 
 
 def cheese_filler():
-    global kill_all, cpu, csv_file, high_speed, low_speed, desired_volume, actual_weight, display_weight, motor_start_time, filling_status, start_time, mould_weight, previous_label, actual_mould_weight, mqtt_client, vfd_state, vfd_speed, batch_number, valve1, valve2
+    global kill_all, cpu, csv_file, high_speed, low_speed, desired_volume, actual_weight, tare, display_weight, motor_start_time, filling_status, start_time, mould_weight, previous_label, actual_mould_weight, mqtt_client, vfd_state, vfd_speed, batch_number, valve1, valve2
     motor_stop_time = 0
     start=5
     stop=6
