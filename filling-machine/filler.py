@@ -515,7 +515,7 @@ def cheese_filler():
                         ", Batch Number = " + batch_number.get())
             else:
                 #if actual_weight - actual_mould_weight > float(desired_volume.get()):
-                weight_remaining =  > float(desired_volume.get())  - (actual_weight - actual_mould_weight) # weight_remaining should be somewhere between 0.2 and 0
+                weight_remaining =  float(desired_volume.get())  - (actual_weight - actual_mould_weight) # weight_remaining should be somewhere between 0.2 and 0
                 motor_speed_factor = weight_remaining / 0.2 # this will provide a multiplier for the motor speed
                 if motor_speed_factor < 0.1:
                     motor_speed_factor = 0.1 #never go slower than 10% of the slow set speed
