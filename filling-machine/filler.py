@@ -429,7 +429,7 @@ def cheese_filler():
                 if mould_detected == 0:
                     mould_detected = time.time()
                     take_picture()
-                elif time.time() - mould_detected > 2 and len(mould_weights) > 20:
+                elif time.time() - mould_detected > 2 and len(mould_weights) > 50:
                     if actual_weight > mould_weight * 0.7 and actual_weight < mould_weight * 1.3 : # after 2 seconds, check the weight again. If the mould is still there, start filling
                         filling_status = 1
                         actual_mould_weight = sum(mould_weights) / len(mould_weights)
@@ -497,7 +497,7 @@ def cheese_filler():
                 elif time.time() - motor_stop_time > 0.2:
                     valve1, valve2 = 0, 0
                     logging.info("Valves Close both valves")
-                    if len(final_mould_weight_list) < 10:
+                    if len(final_mould_weight_list) < 50:
                         final_mould_weight_list.append(actual_weight - actual_mould_weight)
                         logging.info("Measurement Mould 1 reading " + str(len(final_mould_weight_list)) + " is " + str(actual_weight))
                     else:
@@ -514,16 +514,12 @@ def cheese_filler():
                         ", Flavour = " + selected.get() + \
                         ", Batch Number = " + batch_number.get())
             else:
-                #if actual_weight - actual_mould_weight > float(desired_volume.get()):
                 weight_remaining =  float(desired_volume.get())  - (actual_weight - actual_mould_weight) # weight_remaining should be somewhere between 0.2 and 0
                 motor_speed_factor = weight_remaining / 0.2 # this will provide a multiplier for the motor speed
                 if motor_speed_factor < 0.1:
                     motor_speed_factor = 0.1 #never go slower than 10% of the slow set speed
                 vfd_speed = int(low_speed.get()) * motor_speed_factor
-                #if motor_stop_time != 0 and time.time() - motor_stop_time > 0.5:
-                #    vfd_state = start
-                #    vfd_speed = int(low_speed.get())
-                #    motor_stop_time = 0
+
 
         elif filling_status == 4:
             if selected.get() != "Brie":
