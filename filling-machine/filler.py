@@ -514,10 +514,16 @@ def cheese_filler():
                         ", Flavour = " + selected.get() + \
                         ", Batch Number = " + batch_number.get())
             else:
-                if motor_stop_time != 0 and time.time() - motor_stop_time > 0.5:
-                    vfd_state = start
-                    vfd_speed = int(low_speed.get())
-                    motor_stop_time = 0
+                #if actual_weight - actual_mould_weight > float(desired_volume.get()):
+                weight_remaining =  > float(desired_volume.get())  - (actual_weight - actual_mould_weight) # weight_remaining should be somewhere between 0.2 and 0
+                motor_speed_factor = weight_remaining / 0.2 # this will provide a multiplier for the motor speed
+                if motor_speed_factor < 0.1:
+                    motor_speed_factor = 0.1 #never go slower than 10% of the slow set speed
+                vfd_speed = int(low_speed.get()) * motor_speed_factor
+                #if motor_stop_time != 0 and time.time() - motor_stop_time > 0.5:
+                #    vfd_state = start
+                #    vfd_speed = int(low_speed.get())
+                #    motor_stop_time = 0
 
         elif filling_status == 4:
             if selected.get() != "Brie":
