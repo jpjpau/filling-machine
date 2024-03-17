@@ -693,7 +693,7 @@ vfd_speed = 0
 # vfd_monitoring.start()
 
 def monitoring_thread():
-    global mqtt_client, cpu, kill_all, high_speed, low_speed, desired_volume, actual_weight, display_weight, filling_status, mould_weight, actual_mould_weight, vfd_state, vfd_speed
+    global mqtt_client, cpu, kill_all, high_speed, low_speed, desired_volume, actual_weight, display_weight, filling_status, mould_weight, actual_mould_weight, vfd_state, vfd_speed, tare
     while kill_all == False:
         try:
             mqtt_client.publish("FillingMachine/CPUTemp", cpu.temperature)
@@ -705,6 +705,7 @@ def monitoring_thread():
             mqtt_client.publish("FillingMachine/FillingStatus", filling_status)
             mqtt_client.publish("FillingMachine/MouldWeight", mould_weight)
             mqtt_client.publish("FillingMachine/ActualMouldWeight", actual_mould_weight)
+            mqtt_client.publish("FillingMachine/Tare", tare)
             mqtt_client.publish("FillingMachine/VFDState", vfd_state)
             mqtt_client.publish("FillingMachine/VFDSpeed", vfd_speed)
         except Exception as e:
@@ -812,7 +813,7 @@ def modbus_thread():
                 for i in range(que_length): 
                     av_sum = av_sum + lc_que[i]
                 actual_weight = (av_sum / que_length) / 1000
-                logging.info(str(lc_que) + "Calculated Value = " + str(actual_weight))
+                logging.info("Measurements: " + str(lc_que) + "Calculated Value = " + str(actual_weight))
             except Exception as e:
                 # print("load cell clash")
                 logging.exception("LOADCELL MODBUS Load Cell Read Error - " + str(e))
