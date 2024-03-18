@@ -516,10 +516,10 @@ def cheese_filler():
             else:
                 weight_remaining =  float(desired_volume.get())  - (actual_weight - actual_mould_weight) # weight_remaining should be somewhere between 0.2 and 0
                 motor_speed_factor = weight_remaining / 0.2 # this will provide a multiplier for the motor speed
-                if motor_speed_factor < 0.1:
-                    motor_speed_factor = 0.1 #never go slower than 10% of the slow set speed
+                if motor_speed_factor < 0.2:
+                    motor_speed_factor = 0.2 #never go slower than 10% of the slow set speed
                 vfd_speed = int(low_speed.get()) * motor_speed_factor
-                logging.info("Filling Motopr speed factor: " + str(motor_speed_factor))
+                logging.info("Filling Motor speed factor: " + str(motor_speed_factor))
 
 
         elif filling_status == 4:
@@ -640,10 +640,10 @@ def cheese_filler():
             else:
                 weight_remaining =  float(desired_volume.get())  - (actual_weight - tare) # weight_remaining should be somewhere between 0.2 and 0
                 motor_speed_factor = weight_remaining / 0.2 # this will provide a multiplier for the motor speed
-                if motor_speed_factor < 0.1:
-                    motor_speed_factor = 0.1 #never go slower than 10% of the slow set speed
+                if motor_speed_factor < 0.2:
+                    motor_speed_factor = 0.2 #never go slower than 10% of the slow set speed
                 vfd_speed = int(low_speed.get()) * motor_speed_factor
-                logging.info("Filling Motopr speed factor: " + str(motor_speed_factor))
+                logging.info("Filling Motor speed factor: " + str(motor_speed_factor))
 
         elif filling_status == 9:
             if time.time() - motor_stop_time > 1:
