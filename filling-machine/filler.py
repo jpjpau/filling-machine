@@ -519,6 +519,7 @@ def cheese_filler():
                 if motor_speed_factor < 0.2:
                     motor_speed_factor = 0.2 #never go slower than 10% of the slow set speed
                 vfd_speed = int(low_speed.get()) * motor_speed_factor
+                vfd_state = start
                 logging.info("Filling Motor speed factor: " + str(motor_speed_factor))
 
 
