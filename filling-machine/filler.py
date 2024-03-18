@@ -519,6 +519,7 @@ def cheese_filler():
                 if motor_speed_factor < 0.1:
                     motor_speed_factor = 0.1 #never go slower than 10% of the slow set speed
                 vfd_speed = int(low_speed.get()) * motor_speed_factor
+                logging.info("Filling Motopr speed factor: " + str(motor_speed_factor))
 
 
         elif filling_status == 4:
@@ -619,8 +620,9 @@ def cheese_filler():
                 elif time.time() - motor_stop_time > 0.2:
                     valve1, valve2 = 0, 0
                     logging.info("Close both valves")
-                    if len(final_mould_weight_list) < 10:
+                    if len(final_mould_weight_list) < 50:
                         final_mould_weight_list.append(actual_weight - tare)
+                        logging.info("Measurement Mould 2 reading " + str(len(final_mould_weight_list)) + " is " + str(actual_weight))
                     else:
                         mould2_final = sum(final_mould_weight_list) / len(final_mould_weight_list)
                         previous_label.set(previous_label.get() + ", " + str(round(mould2_final,3)))
@@ -636,11 +638,12 @@ def cheese_filler():
                         ", Batch Number = " + batch_number.get())
                         take_picture()
             else:
-                if motor_stop_time != 0 and time.time() - motor_stop_time > 0.5:
-                    valve1, valve2 = 0, 1
-                    vfd_state = start
-                    vfd_speed = int(low_speed.get())
-                    motor_stop_time = 0
+                weight_remaining =  float(desired_volume.get())  - (actual_weight - tare) # weight_remaining should be somewhere between 0.2 and 0
+                motor_speed_factor = weight_remaining / 0.2 # this will provide a multiplier for the motor speed
+                if motor_speed_factor < 0.1:
+                    motor_speed_factor = 0.1 #never go slower than 10% of the slow set speed
+                vfd_speed = int(low_speed.get()) * motor_speed_factor
+                logging.info("Filling Motopr speed factor: " + str(motor_speed_factor))
 
         elif filling_status == 9:
             if time.time() - motor_stop_time > 1:
