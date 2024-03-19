@@ -59,8 +59,8 @@ valve1, valve2 = 0, 0
 
 publish_weight_timer = 0
 
-left_bias = 0.020
-right_bias = -0.010
+left_bias = 0.030
+right_bias = -0.020
 
 Food_Service = 1.5
 Brie = 2.11
