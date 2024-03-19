@@ -59,7 +59,7 @@ valve1, valve2 = 0, 0
 
 publish_weight_timer = 0
 
-left_bias = 0.030
+left_bias = 0.040
 right_bias = -0.020
 
 Food_Service = 1.5
