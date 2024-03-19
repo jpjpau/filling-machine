@@ -59,6 +59,9 @@ valve1, valve2 = 0, 0
 
 publish_weight_timer = 0
 
+left_bias = 20
+right_bias = -10
+
 Food_Service = 1.5
 Brie = 2.11
 SM_CO_GCO = 1.35 # added 50g 24th Feb
@@ -404,7 +407,7 @@ scale_calibration = []
 
 
 def cheese_filler():
-    global kill_all, cpu, csv_file, high_speed, low_speed, desired_volume, actual_weight, tare, display_weight, motor_start_time, filling_status, start_time, mould_weight, previous_label, actual_mould_weight, mqtt_client, vfd_state, vfd_speed, batch_number, valve1, valve2
+    global left_bias, right_bias, kill_all, cpu, csv_file, high_speed, low_speed, desired_volume, actual_weight, tare, display_weight, motor_start_time, filling_status, start_time, mould_weight, previous_label, actual_mould_weight, mqtt_client, vfd_state, vfd_speed, batch_number, valve1, valve2
     motor_stop_time = 0
     start=5
     stop=6
@@ -471,11 +474,11 @@ def cheese_filler():
                 logging.info("Start VFD at speed " + str(high_speed.get()))
 
         elif filling_status == 2:
-            if actual_weight - actual_mould_weight < float(desired_volume.get()) - 0.2: #keep filling at high speed
+            if actual_weight - actual_mould_weight < (float(desired_volume.get()) + left_bias) - 0.2: #keep filling at high speed
                 filling_status = 2
                 vfd_state = start
                 vfd_speed = int(high_speed.get())
-            elif actual_weight - actual_mould_weight > float(desired_volume.get()) - 0.2: #set filling speed to low
+            elif actual_weight - actual_mould_weight > (float(desired_volume.get()) + left_bias) - 0.2: #set filling speed to low
                 filling_status = 3
                 vfd_state = start
                 vfd_speed = int(low_speed.get())
@@ -488,7 +491,7 @@ def cheese_filler():
                 ", Batch Number = " + batch_number.get())
                 
         elif filling_status == 3:
-            if actual_weight - actual_mould_weight > float(desired_volume.get()):
+            if actual_weight - actual_mould_weight > (float(desired_volume.get()) + left_bias):
                 vfd_state = stop
                 vfd_speed = 0
                 if motor_stop_time == 0:
@@ -514,7 +517,7 @@ def cheese_filler():
                         ", Flavour = " + selected.get() + \
                         ", Batch Number = " + batch_number.get())
             else:
-                weight_remaining =  float(desired_volume.get())  - (actual_weight - actual_mould_weight) # weight_remaining should be somewhere between 0.2 and 0
+                weight_remaining =  (float(desired_volume.get()) + left_bias)  - (actual_weight - actual_mould_weight) # weight_remaining should be somewhere between 0.2 and 0
                 motor_speed_factor = weight_remaining / 0.2 # this will provide a multiplier for the motor speed
                 if motor_speed_factor < 0.2:
                     motor_speed_factor = 0.2 #never go slower than 10% of the slow set speed
@@ -595,7 +598,7 @@ def cheese_filler():
             ", Batch Number = " + batch_number.get())
 
         elif filling_status == 7:
-            if actual_weight - tare < float(desired_volume.get()) - 0.2:
+            if actual_weight - tare < (float(desired_volume.get()) + right_bias) - 0.2:
                 vfd_state = start
                 vfd_speed = int(high_speed.get())
             else:
@@ -612,7 +615,7 @@ def cheese_filler():
                 
         elif filling_status == 8:
             
-            if actual_weight - tare > float(desired_volume.get()):
+            if actual_weight - tare > (float(desired_volume.get()) + right_bias):
                 vfd_state = stop
                 vfd_speed = 0
                 if motor_stop_time == 0:
@@ -639,7 +642,7 @@ def cheese_filler():
                         ", Batch Number = " + batch_number.get())
                         take_picture()
             else:
-                weight_remaining =  float(desired_volume.get())  - (actual_weight - tare) # weight_remaining should be somewhere between 0.2 and 0
+                weight_remaining =  (float(desired_volume.get()) + right_bias)  - (actual_weight - tare) # weight_remaining should be somewhere between 0.2 and 0
                 motor_speed_factor = weight_remaining / 0.2 # this will provide a multiplier for the motor speed
                 if motor_speed_factor < 0.2:
                     motor_speed_factor = 0.2 #never go slower than 10% of the slow set speed
