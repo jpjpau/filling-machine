@@ -1,9 +1,9 @@
-#Git Test 1
 # This script has been split into multiple files
 # Filling-MODBUS.py handles all the MODBUS creation tasks as well as MODBUS messaging
 
 # influxdb api nQ7wJ20hv3kWwLVPeV6RDstRgRPnx4wMsG58ILw75Ak30qXwoCOwSwRtERfKhCW8KHIsMEEyae-ZbjqujQQnAw==
 # sA91iKW50uVu7zJ4VCShP39qJDrHQh9vmhJzqE68D5CkKta31RMSaOIXd_ayuKdNjrb9bSq9CrV9oYLN_RyI6A==
+
 
 import modbus
 import tkinter as tk
@@ -66,8 +66,8 @@ Food_Service = 1.5
 Brie = 2.11
 SM_CO_GCO = 1.35 # added 50g 24th Feb
 H_GPH = 1.3 # added 50g 24th Feb
-Essent_Mozz = 0.66
-Essent_Ched = 0.8
+Essent_Mozz = 0.65
+Essent_Ched = 0.74
 focus = "Clean"
 actual_weight = 0
 start_time = time.time()
