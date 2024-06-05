@@ -4,7 +4,6 @@
 # influxdb api nQ7wJ20hv3kWwLVPeV6RDstRgRPnx4wMsG58ILw75Ak30qXwoCOwSwRtERfKhCW8KHIsMEEyae-ZbjqujQQnAw==
 # sA91iKW50uVu7zJ4VCShP39qJDrHQh9vmhJzqE68D5CkKta31RMSaOIXd_ayuKdNjrb9bSq9CrV9oYLN_RyI6A==
 
-
 import modbus
 import tkinter as tk
 from tkinter import ttk
@@ -27,6 +26,7 @@ from os.path import exists
 from collections import deque 
 que_length = 5
 lc_que = deque([0]*que_length,que_length) 
+enable_camera = 0 # 0 = camera disabled, 1 = camera enabled
 
 try:
     mqttBroker ="192.168.15.70" 
@@ -217,8 +217,11 @@ def get_batch(var1):
 tabControl.bind('<<NotebookTabChanged>>', get_batch)
 
 def take_picture():
-    thread = threading.Thread(target=picture_thread)
-    thread.start()
+    global enable_camera
+    if enable_camera == 1 {
+        thread = threading.Thread(target=picture_thread)
+        thread.start()
+    }
 
 def picture_thread():
     global batch_number, cam
