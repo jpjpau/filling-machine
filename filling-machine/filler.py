@@ -1,8 +1,6 @@
 # This script has been split into multiple files
 # Filling-MODBUS.py handles all the MODBUS creation tasks as well as MODBUS messaging
 
-# influxdb api nQ7wJ20hv3kWwLVPeV6RDstRgRPnx4wMsG58ILw75Ak30qXwoCOwSwRtERfKhCW8KHIsMEEyae-ZbjqujQQnAw==
-# sA91iKW50uVu7zJ4VCShP39qJDrHQh9vmhJzqE68D5CkKta31RMSaOIXd_ayuKdNjrb9bSq9CrV9oYLN_RyI6A==
 
 import modbus
 import tkinter as tk
