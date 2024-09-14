@@ -218,7 +218,7 @@ def take_picture(batch):
     global enable_camera
     if enable_camera == 1:
         thread = threading.Thread(target=picture_thread)
-        thread.start(batch)
+        thread.start()
 
 
 def picture_thread(batch):
