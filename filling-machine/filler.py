@@ -217,7 +217,7 @@ tabControl.bind('<<NotebookTabChanged>>', get_batch)
 def take_picture(batch):
     global enable_camera
     if enable_camera == 1:
-        thread = threading.Thread(target=picture_thread)
+        thread = threading.Thread(target=picture_thread, args=(batch))
         thread.start()
 
 
@@ -234,6 +234,8 @@ def picture_thread(batch):
         cv2.imwrite('/home/pi/' + batch_number.get() + ' - ' + timestamp + '.jpg', image)
     except:
         logging.exception("Webcam error")
+
+take_picture("testing")
 
 def clean():
     global button_clean, cleaning
