@@ -24,7 +24,7 @@ from os.path import exists
 from collections import deque 
 que_length = 5
 lc_que = deque([0]*que_length,que_length) 
-enable_camera = 0 # 0 = camera disabled, 1 = camera enabled
+enable_camera = 1 # 0 = camera disabled, 1 = camera enabled
 
 try:
     mqttBroker ="192.168.15.70" 
@@ -214,19 +214,19 @@ def get_batch(var1):
 #button_popup = tk.Button(cleaningtab, text="Batch", font=("Arial", 45), command=get_batch)
 tabControl.bind('<<NotebookTabChanged>>', get_batch)
 
-def take_picture():
+def take_picture(batch):
     global enable_camera
     if enable_camera == 1:
         thread = threading.Thread(target=picture_thread)
-        thread.start()
+        thread.start(batch)
 
 
-def picture_thread():
+def picture_thread(batch):
     global batch_number, cam
     now = datetime.now()
     timestamp = now.strftime("%Y-%m-%d %H-%M-%S")
     ret, image = cam.read()
-    cv2.imwrite('/home/pi/' + batch_number.get() + ' - ' + timestamp + '.jpg', image)
+    cv2.imwrite('/home/pi/' + batch + ' - ' + timestamp + '.jpg', image)
     # cv2.imwrite('/home/pi/' + timestamp + '.jpg', image)
     # cv2.imwrite('/home/pi/testimage.jpg', image)
     try:
@@ -432,7 +432,7 @@ def cheese_filler():
             elif actual_weight > mould_weight * 0.7 and actual_weight < mould_weight * 1.3 : # a mould is on the scale
                 if mould_detected == 0:
                     mould_detected = time.time()
-                    take_picture()
+                    take_picture("Mould Found - " + batch_number.get())
                 elif time.time() - mould_detected > 2 and len(mould_weights) > 50:
                     if actual_weight > mould_weight * 0.7 and actual_weight < mould_weight * 1.3 : # after 2 seconds, check the weight again. If the mould is still there, start filling
                         filling_status = 1
@@ -443,7 +443,7 @@ def cheese_filler():
                         ", Filling Status = " + str(filling_status) + \
                         ", Flavour = " + selected.get() + \
                         ", Batch Number = " + batch_number.get())
-                        take_picture()
+                        take_picture("Mould Confirmed - " + batch_number.get())
                         if selected.get() == "Brie":
                             valve1, valve2 = 1, 1
                             logging.info("Valves Open both valves")
@@ -538,7 +538,7 @@ def cheese_filler():
                 ", Filling Status = " + str(filling_status) + \
                 ", Flavour = " + selected.get() + \
                 ", Batch Number = " + batch_number.get())
-                take_picture()
+                take_picture(batch_number.get())
             else:
                 filling_status = 5
                 mould2_fill_time = 0
@@ -641,7 +641,7 @@ def cheese_filler():
                         ", Filling Status = " + str(filling_status) + \
                         ", Flavour = " + selected.get() + \
                         ", Batch Number = " + batch_number.get())
-                        take_picture()
+                        take_picture(batch_number.get())
             else:
                 weight_remaining =  (float(desired_volume.get()) + right_bias)  - (actual_weight - tare) # weight_remaining should be somewhere between 0.2 and 0
                 motor_speed_factor = weight_remaining / 0.2 # this will provide a multiplier for the motor speed
