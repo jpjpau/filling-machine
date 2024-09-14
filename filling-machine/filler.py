@@ -44,7 +44,7 @@ csv_file.writerow(header)
 
 kill_all = False
 
-syslogging = logging.handlers.SysLogHandler(address=("192.168.15.70", 1514))
+syslogging = logging.handlers.SysLogHandler(address=("192.168.15.6", 1514))
 root = logging.getLogger()
 root.setLevel(logging.INFO)
 root.setLevel(os.environ.get("LOGLEVEL", "INFO"))
