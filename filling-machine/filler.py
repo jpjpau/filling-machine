@@ -217,7 +217,7 @@ tabControl.bind('<<NotebookTabChanged>>', get_batch)
 def take_picture(batch):
     global enable_camera
     if enable_camera == 1:
-        thread = threading.Thread(target=picture_thread, args=(batch))
+        thread = threading.Thread(target=picture_thread, args=(batch,))
         thread.start()
 
 
