@@ -235,7 +235,7 @@ def picture_thread(batch):
     except:
         logging.exception("Webcam error")
 
-take_picture("testing")
+take_picture('testing')
 
 def clean():
     global button_clean, cleaning
