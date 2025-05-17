@@ -1,5 +1,6 @@
 import minimalmodbus
 import serial
+import logging
 
 class ModbusInterface:
     """
