@@ -40,14 +40,14 @@ def controller():
 
 def test_select_flavour(controller):
     # Default flavour from config
-    default_vol   = controller.config.get("Food_Service")
-    default_mould = controller.config.get("Food_Service_mould")
+    default_vol   = controller.config.volumes["Food_Service"]
+    default_mould = controller.config.mould_weights["Food_Service"]
     assert controller.desired_volume == pytest.approx(default_vol)
     assert controller.mould_weight   == pytest.approx(default_mould)
     # Change to 'Brie'
     controller.select_flavour("Brie")
-    assert controller.desired_volume == pytest.approx(controller.config.get("Brie"))
-    assert controller.mould_weight   == pytest.approx(controller.config.get("Brie_mould"))
+    assert controller.desired_volume == pytest.approx(controller.config.volumes["Brie"])
+    assert controller.mould_weight   == pytest.approx(controller.config.mould_weights["Brie"])
 
 def test_detect_mould_logic(controller):
     tol = controller._mould_tol

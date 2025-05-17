@@ -36,7 +36,8 @@ class MachineController:
         self.valve2         = False      # right valve state
         self.actual_weight  = 0.0        # last read weight
         self.desired_volume = config.get("Food_Service")
-        self.mould_weight   = config.get("Food_Service_mould")
+        # Tare weight for the default flavour
+        self.mould_weight   = config.mould_weights.get("Food_Service")
         self.filling_status = 0          # custom status code
 
         # Load-cell & timing parameters from config
@@ -65,7 +66,8 @@ class MachineController:
         Change target volume and mould weight based on flavour.
         """
         self.desired_volume = self.config.get(name)
-        self.mould_weight   = self.config.get(f"{name}_mould")
+        # Update mould weight from nested mould_weights
+        self.mould_weight   = self.config.mould_weights.get(name)
         logging.info(f"Flavour selected: {name}, volume={self.desired_volume}, mould={self.mould_weight}")
 
     def start(self) -> None:

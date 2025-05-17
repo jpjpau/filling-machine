@@ -1,4 +1,3 @@
-import math
 import tkinter as tk
 from tkinter import ttk
 
@@ -107,13 +106,6 @@ class UIManager:
         """
         self.controller.select_flavour(value)
 
-    def on_speed_change(self, val):
-        """
-        Called when the VFD speed slider moves.
-        """
-        speed = int(float(val))
-        self.controller.vfd_speed = speed
-        self.speed_label.config(text=str(speed))
 
     def on_fast_speed_change(self, val):
         speed = float(val)

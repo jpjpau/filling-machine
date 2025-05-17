@@ -15,29 +15,29 @@ class Config:
         self._data = data
 
     def get(self, key: str):
-        return self._data[key]
+        # Top‐level settings
+        if key in self._data:
+            return self._data[key]
+        # Flavour volumes
+        flavours = self._data.get("flavours", {})
+        if key in flavours:
+            return flavours[key]
+        # Mould tare weights
+        moulds = self._data.get("mould_weights", {})
+        if key in moulds:
+            return moulds[key]
+        raise KeyError(f"Config key {key!r} not found")
 
     @property
     def volumes(self):
         """
-        Returns only the numeric pour‐volume entries (e.g. 'Brie', 'Food_Service', etc.),
-        excluding any '_mould' weights or other settings.
+        Returns the dict of flavour volumes.
         """
-        return {
-            k: v
-            for k, v in self._data.items()
-            if not k.endswith("_mould")
-               and isinstance(v, (int, float))
-        }
+        return dict(self._data.get("flavours", {}))
 
     @property
     def mould_weights(self):
         """
-        Returns only the numeric mould‐tare entries (keys ending in '_mould').
+        Returns the dict of mould tare weights.
         """
-        return {
-            k: v
-            for k, v in self._data.items()
-            if k.endswith("_mould")
-               and isinstance(v, (int, float))
-        }
+        return dict(self._data.get("mould_weights", {}))
