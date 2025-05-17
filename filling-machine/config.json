@@ -10,6 +10,11 @@
   "confirm_removals": 3,
   "fast_speed": 150.0,
   "slow_speed": 50.0,
+  "clean_speed": 150.0,
+  "clean_initial_delay": 1.0,
+  "clean_interval": 10.0,
+  "clean_toggle_delay": 1.0,
+  "clean_stop_delay": 5.0,
 
   "flavours": {
     "Food_Service": 1.5,

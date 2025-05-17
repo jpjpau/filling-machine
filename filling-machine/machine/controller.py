@@ -60,6 +60,10 @@ class MachineController:
         # Thread control
         self.kill_all       = threading.Event()
         self._threads       = []
+        
+        # Cleaning control
+        self._clean_stop   = threading.Event()
+        self._clean_thread = None
 
     def select_flavour(self, name: str) -> None:
         """
@@ -79,6 +83,34 @@ class MachineController:
             self._threads.append(t)
             t.start()
         logging.info("MachineController: threads started")
+
+    def start_clean_cycle(self) -> None:
+        """
+        Begin the cleaning cycle in a separate thread.
+        """
+        if self._clean_thread and self._clean_thread.is_alive():
+            return  # already cleaning
+        self._clean_stop.clear()
+        self._clean_thread = threading.Thread(target=self._clean_loop, daemon=True)
+        self._clean_thread.start()
+        logging.info("Cleaning cycle started")
+
+    def stop_clean_cycle(self) -> None:
+        """
+        Signal the cleaning cycle to stop, stop VFD, then close valves after delay.
+        """
+        self._clean_stop.set()
+        # Immediately stop VFD
+        self.vfd_state = 0
+        self.vfd_speed = 0
+        # Schedule valves closure after clean_stop_delay
+        delay = self.config.get("clean_stop_delay")
+        threading.Timer(delay, lambda: (
+            self.modbus.set_valve("both", "close"),
+            logging.info("Cleaning cycle stopped: valves closed")
+        )).start()
+        logging.info("Cleaning cycle stop initiated")
+
 
     def stop(self) -> None:
         """
@@ -146,6 +178,38 @@ class MachineController:
         w = self.actual_weight
         # Check if within mould tolerance
         return abs(w - self.mould_weight) <= self.mould_weight * self._mould_tol
+
+    def _clean_loop(self) -> None:
+        """
+        Internal cleaning cycle loop:
+        - Open left valve, wait initial delay, start VFD at clean_speed
+        - Alternate opening right/left valves every clean_interval with toggle delays
+        """
+        cfg = self.config
+        # initial left-open and VFD start
+        self.modbus.set_valve("left", "open")
+        time.sleep(cfg.get("clean_initial_delay"))
+        self.vfd_state = 6
+        self.vfd_speed = int(cfg.get("clean_speed") * 100)
+
+        # alternate cycle
+        left_open = True
+        interval    = cfg.get("clean_interval")
+        toggle_delay= cfg.get("clean_toggle_delay")
+
+        while not self._clean_stop.is_set():
+            time.sleep(interval)
+            if left_open:
+                self.modbus.set_valve("right", "open")
+                time.sleep(toggle_delay)
+                self.modbus.set_valve("left", "close")
+            else:
+                self.modbus.set_valve("left", "open")
+                time.sleep(toggle_delay)
+                self.modbus.set_valve("right", "close")
+            left_open = not left_open
+
+        logging.info("Exiting clean loop")
 
     def _filling_loop(self) -> None:
         """
