@@ -165,3 +165,4 @@ class UIManager:
         self.slow_speed_label.config(text=f"{self.controller.speed_slow:.2f} Hz")
         # Schedule next update
         self.root.after(100, self.update_ui)
+
