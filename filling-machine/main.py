@@ -10,7 +10,7 @@ def main():
 
     # 2. Initialize hardware interfaces
     modbus = ModbusInterface()
-    mqtt   = MqttClient(cfg.get("mqttBroker"))
+    mqtt   = MqttClient(cfg)
 
     # 3. Create controller and UI
     controller = MachineController(cfg, modbus, mqtt)
