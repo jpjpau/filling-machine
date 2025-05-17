@@ -12,12 +12,12 @@ class ModbusInterface:
 
     def __init__(self):
         # VFD (turny_boi)
-        self.vfd = minimalmodbus.Instrument("/dev/ttySC1", 2)
-        self.vfd.mode    = minimalmodbus.MODE_ASCII
+        self.vfd = minimalmodbus.Instrument("/dev/ttySC1", 2, minimalmodbus.MODE_ASCII)
+        #self.vfd.mode    = minimalmodbus.MODE_ASCII
         self.vfd.serial.baudrate = 19200
         self.vfd.serial.timeout  = 0.2
         self.vfd.serial.parity   = minimalmodbus.serial.PARITY_NONE
-        self.vfd.serial.bytesize = 7
+        self.vfd.serial.bytesize = 8
         self.vfd.serial.stopbits = 1
         self.vfd.clear_buffers_before_each_transaction = True
         self.vfd.close_port_after_each_call            = True
