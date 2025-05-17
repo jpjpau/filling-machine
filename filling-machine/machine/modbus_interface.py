@@ -56,13 +56,13 @@ class ModbusInterface:
         """
         Write to the VFD state register (e.g., 0=stop, 6=start).
         """
-        self.vfd.write_register(0x1E00, state)
+        self.vfd.write_register(0x2000, state)
 
     def set_vfd_speed(self, speed: int):
         """
         Write to the VFD speed register (0–255).
         """
-        self.vfd.write_register(0x1E01, speed)
+        self.vfd.write_register(0x2001, speed)
 
     def set_valve(self, valve: str, action: str):
         """

@@ -1,5 +1,5 @@
 {
-  "mqttBroker": "192.168.15.70",
+  "mqttBroker": "192.168.15.6",
   "loadcell_interval": 0.1,
   "valve_start_delay": 0.1,
   "post_fill_delay": 1.0,

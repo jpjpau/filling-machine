@@ -6,6 +6,9 @@ import logging
 from datetime import datetime
 from typing import Any
 
+import minimalmodbus
+from minimalmodbus import NoResponseError
+
 from config import Config
 from machine.modbus_interface import ModbusInterface
 from machine.mqtt_client import MqttClient
@@ -148,6 +151,9 @@ class MachineController:
                 self.modbus.set_valve("left",  "open" if self.valve1 else "close")
                 self.modbus.set_valve("right", "open" if self.valve2 else "close")
                 self.actual_weight = self.modbus.read_load_cell()
+            except NoResponseError as e:
+                # Non‐fatal: instrument didn’t answer this cycle
+                logging.debug(f"Modbus no response (will retry): {e}")
             except Exception:
                 logging.exception("Error in modbus loop")
             time.sleep(self._read_interval)
