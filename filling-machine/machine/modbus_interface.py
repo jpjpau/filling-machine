@@ -64,22 +64,28 @@ class ModbusInterface:
         """
         self.vfd.write_register(0x1E01, speed)
 
-    def set_valve(self, valve_id: int, on: bool):
+    def set_valve(self, valve: str, action: str):
         """
-        Turn a single valve coil on or off.
-        valve_id: coil number (e.g., 0 or 1).
+        Control one or both valves by name.
+          valve: "left", "right", or "both"
+          action: "open" or "close"
         """
-        self.valves.write_bit(valve_id, int(on))
+        # Map valve names to coil indices
+        mapping = {"left": 0, "right": 1}
+        if valve == "both":
+            coils = list(mapping.values())
+        elif valve in mapping:
+            coils = [mapping[valve]]
+        else:
+            raise ValueError(f"Unknown valve: {valve}")
 
-    # Convenience methods for two valves
-    def open_valve1(self):
-        self.set_valve(0, True)
+        # Determine bit value and validate action
+        if action == "open":
+            bit = 1
+        elif action == "close":
+            bit = 0
+        else:
+            raise ValueError(f"Unknown action: {action}")
 
-    def close_valve1(self):
-        self.set_valve(0, False)
-
-    def open_valve2(self):
-        self.set_valve(1, True)
-
-    def close_valve2(self):
-        self.set_valve(1, False)
+        for coil in coils:
+            self.valves.write_bit(coil, bit)

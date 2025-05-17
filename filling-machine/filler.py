@@ -20,12 +20,32 @@ cpu = CPUTemperature()
 import logging
 import logging.handlers
 import os
+import json
 import cv2
 from os.path import exists
 from collections import deque 
 que_length = 5
 lc_que = deque([0]*que_length,que_length) 
 enable_camera = 1 # 0 = camera disabled, 1 = camera enabled
+
+config_path = os.path.join(os.path.dirname(__file__), "config.json")
+with open(config_path, "r") as cfg:
+    config = json.load(cfg)
+
+Food_Service       = config["Food_Service"]
+Brie               = config["Brie"]
+SM_CO_GCO          = config["SM_CO_GCO"]
+H_GPH              = config["H_GPH"]
+Essent_Mozz        = config["Essent_Mozz"]
+Essent_Ched        = config["Essent_Ched"]
+
+Food_Service_mould = config["Food_Service_mould"]
+Brie_mould         = config["Brie_mould"]
+SM_CO_GCO_mould    = config["SM_CO_GCO_mould"]
+H_GPH_mould        = config["H_GPH_mould"]
+Essent_Mozz_Mould  = config["Essent_Mozz_Mould"]
+Essent_Ched_Mould  = config["Essent_Ched_Mould"]
+
 
 try:
     mqttBroker ="192.168.15.70" 
@@ -61,23 +81,10 @@ publish_weight_timer = 0
 left_bias = 0.0
 right_bias = 0.0
 
-Food_Service = 1.5
-Brie = 2.11
-SM_CO_GCO = 1.35 # added 50g 24th Feb
-H_GPH = 1.3 # added 50g 24th Feb
-Essent_Mozz = 0.65
-Essent_Ched = 0.74
 focus = "Clean"
 actual_weight = 0
 start_time = time.time()
 mould_weight = 1.2
-
-Food_Service_mould = 1.2
-Brie_mould = 1.3
-SM_CO_GCO_mould = 1.2
-H_GPH_mould = 1.02
-Essent_Mozz_Mould = 1.2
-Essent_Ched_Mould = 1.2
 
 motor_start_time = 0
 
@@ -337,25 +344,25 @@ def volume_change(val):
     desired_volume_frame['text'] = "Target Volume - " + str(desired_volume.get())
 
 def filling_change():
-    global selected, desired_volume, mould_weight, SM_CO_GCO, H_GPH, Brie, Food_Service, SM_CO_GCO_mould, H_GPH_mould, Brie_mould, desired_volume_frame
+    global selected, desired_volume, mould_weight, desired_volume_frame
     if selected.get() == "SM / CO / GCO":
-        desired_volume.set(SM_CO_GCO)
-        mould_weight = SM_CO_GCO_mould
+        desired_volume.set(config["SM_CO_GCO"])
+        mould_weight = config["SM_CO_GCO_mould"]
     elif selected.get() == "H / GPH":
-        desired_volume.set(H_GPH)
-        mould_weight = H_GPH_mould
+        desired_volume.set(config["H_GPH"])
+        mould_weight = config["H_GPH_mould"]
     elif selected.get() == "Brie":
-        desired_volume.set(Brie)
-        mould_weight = Brie_mould
+        desired_volume.set(config["Brie"])
+        mould_weight = config["Brie_mould"]
     elif selected.get() == "Food Service":
-        desired_volume.set(Food_Service)
-        mould_weight = Food_Service_mould
+        desired_volume.set(config["Food_Service"])
+        mould_weight = config["Food_Service_mould"]
     elif selected.get() == "Essent. Mozzarella":
-        desired_volume.set(Essent_Mozz)
-        mould_weight = Essent_Mozz_Mould
+        desired_volume.set(config["Essent_Mozz"])
+        mould_weight = config["Essent_Mozz_Mould"]
     elif selected.get() == "Essent. Cheddar":
-        desired_volume.set(Essent_Ched)
-        mould_weight = Essent_Ched_Mould    
+        desired_volume.set(config["Essent_Ched"])
+        mould_weight = config["Essent_Ched_Mould"]    
     desired_volume_frame['text'] = "Target Volume - " + str(desired_volume.get())
 
 r1 = ttk.Radiobutton(filling_options_frame, text='SM / CO / GCO', value='SM / CO / GCO', variable=selected, command=filling_change)
