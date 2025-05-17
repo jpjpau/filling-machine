@@ -31,9 +31,15 @@ class MachineController:
         self.config = config
         self.modbus = modbus
         self.mqtt   = mqtt
+        
+        # VFD command codes from config
+        self.vfd_run_cmd  = config.get("vfd_run_command")
+        self.vfd_stop_cmd = config.get("vfd_stop_command")
 
         # Default user parameters
-        self.vfd_state      = 0          # VFD off initially
+        self.vfd_state      = self.vfd_stop_cmd   # VFD off initially
+
+        # Default user parameters
         self.vfd_speed      = 0          # 0–255 units (0–2.55Hz)
         self.valve1         = False      # left valve state
         self.valve2         = False      # right valve state
@@ -104,7 +110,7 @@ class MachineController:
         """
         self._clean_stop.set()
         # Immediately stop VFD
-        self.vfd_state = 0
+        self.vfd_state = self.vfd_stop_cmd
         self.vfd_speed = 0
         # Schedule valves closure after clean_stop_delay
         delay = self.config.get("clean_stop_delay")
@@ -126,7 +132,7 @@ class MachineController:
         # Hardware shutdown
         try:
             self.modbus.set_vfd_speed(0)
-            self.modbus.set_vfd_state(0)
+            self.modbus.set_vfd_state(self.vfd_stop_cmd)
             self.modbus.set_valve("left",  "close")
             self.modbus.set_valve("right", "close")
         except Exception:
@@ -195,7 +201,7 @@ class MachineController:
         # initial left-open and VFD start
         self.modbus.set_valve("left", "open")
         time.sleep(cfg.get("clean_initial_delay"))
-        self.vfd_state = 6
+        self.vfd_state = self.vfd_run_cmd
         self.vfd_speed = int(cfg.get("clean_speed") * 100)
 
         # alternate cycle
@@ -240,7 +246,7 @@ class MachineController:
                             self._tare_weight = w
                             time.sleep(self._valve_delay)
                             self.valve1     = True
-                            self.vfd_state  = 6
+                            self.vfd_state  = self.vfd_run_cmd
                             self.vfd_speed  = int(self.speed_fast * 100)
                             self._state     = self.STATE_FILL_LEFT_FAST
                     else:
@@ -256,7 +262,7 @@ class MachineController:
                 elif self._state == self.STATE_FILL_LEFT_SLOW:
                     if (w - self._tare_weight) >= self.desired_volume:
                         self.vfd_speed = 0
-                        self.vfd_state = 0
+                        self.vfd_state = self.vfd_stop_cmd
                         time.sleep(self._post_fill_delay)
                         self.valve1 = False
                         time.sleep(self._post_fill_delay)
@@ -268,7 +274,7 @@ class MachineController:
                     self._consec_count = 0
                     self._tare_weight  = w
                     self.valve2        = True
-                    self.vfd_state     = 6
+                    self.vfd_state     = self.vfd_run_cmd
                     self.vfd_speed     = int(self.speed_fast * 100)
                     self._state        = self.STATE_FILL_RIGHT_FAST
 
@@ -282,7 +288,7 @@ class MachineController:
                 elif self._state == self.STATE_FILL_RIGHT_SLOW:
                     if (w - self._tare_weight) >= self.desired_volume:
                         self.vfd_speed = 0
-                        self.vfd_state = 0
+                        self.vfd_state = self.vfd_stop_cmd
                         time.sleep(self._post_fill_delay)
                         self.valve2 = False
                         self._state  = self.STATE_WAIT_REMOVAL
