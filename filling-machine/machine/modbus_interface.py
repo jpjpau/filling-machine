@@ -56,7 +56,7 @@ class ModbusInterface:
         """
         Write to the VFD state register (e.g., 0=stop, 6=start).
         """
-        self.vfd.write_register(0x2000, state)
+        self.vfd.write_register(0x2000, state) 
 
     def set_vfd_speed(self, speed: int):
         """
