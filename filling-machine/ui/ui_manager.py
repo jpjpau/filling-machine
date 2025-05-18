@@ -14,6 +14,8 @@ class UIManager:
         style = ttk.Style()
         default_font = tkFont.Font(size=20)
         style.configure('TNotebook.Tab', font=default_font, padding=[10, 10])
+        # Button style for large touchscreen buttons
+        style.configure('Large.TButton', font=default_font, padding=[10, 10])
 
         # Main window
         self.root = tk.Tk()
@@ -32,10 +34,10 @@ class UIManager:
         clean_frame = ttk.Frame(clean_tab)
         clean_frame.pack(pady=20)
         self.clean_button = ttk.Button(clean_frame, text="Clean", command=self.toggle_clean,
-                                       font=default_font, width=12, height=2)
+                                       style='Large.TButton', width=12)
         self.clean_button.grid(row=0, column=0, padx=10)
         exit_button = ttk.Button(clean_frame, text="Exit", command=self.on_close,
-                                 font=default_font, width=12, height=2)
+                                 style='Large.TButton', width=12)
         exit_button.grid(row=0, column=1, padx=10)
 
         # --- Fill Tab ---
@@ -105,7 +107,7 @@ class UIManager:
         prime_frame = ttk.Frame(fill_tab)
         prime_frame.pack(pady=10)
         self.prime_button = ttk.Button(prime_frame, text="Prime",
-                                      font=default_font, width=16, height=2)
+                                       style='Large.TButton', width=16)
         self.prime_button.pack()
         self.prime_button.bind("<ButtonPress>", self.on_prime_press)
         self.prime_button.bind("<ButtonRelease>", self.on_prime_release)
@@ -137,11 +139,11 @@ class UIManager:
             self.flavour_vars[flavour] = var
             ttk.Label(f_frame, textvariable=var, width=6).pack(side="right", padx=5)
             ttk.Button(f_frame, text="+", command=lambda f=flavour: self.adjust_flavour(f, 0.1),
-                       font=default_font, width=4, height=2).pack(side="right")
+                       style='Large.TButton', width=4).pack(side="right")
             ttk.Button(f_frame, text="−", command=lambda f=flavour: self.adjust_flavour(f, -0.1),
-                       font=default_font, width=4, height=2).pack(side="right", padx=2)
+                       style='Large.TButton', width=4).pack(side="right", padx=2)
         save_btn = ttk.Button(adjust_frame, text="Save Flavours", command=self.save_flavours,
-                              font=default_font, width=16, height=2)
+                              style='Large.TButton', width=16)
         save_btn.pack(pady=5)
 
         # Kick off update loop
