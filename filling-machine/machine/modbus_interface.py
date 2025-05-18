@@ -27,7 +27,7 @@ class ModbusInterface:
         self.scale = minimalmodbus.Instrument("/dev/ttySC0", 1)
         self.scale.mode    = minimalmodbus.MODE_RTU
         self.scale.serial.baudrate = 9600
-        self.scale.serial.timeout  = 0.05
+        self.scale.serial.timeout  = 0.5
         self.scale.serial.parity   = minimalmodbus.serial.PARITY_NONE
         self.scale.serial.bytesize = 8
         self.scale.serial.stopbits = 1
