@@ -3,7 +3,7 @@
   "loadcell_interval": 0.1,
   "valve_start_delay": 0.1,
   "post_fill_delay": 1.0,
-  "mould_tolerance": 0.10,
+  "mould_tolerance": 0.20,
   "fill_tolerance": 0.15,
   "removal_tolerance": 0.02,
   "confirm_readings": 3,
