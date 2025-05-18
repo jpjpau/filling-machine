@@ -68,6 +68,11 @@ class ModbusInterface:
         self._valve2_state = 0
 
     def read_load_cell(self) -> float:
+        now = time.time()
+        elapsed = now - self._last_scale_time
+        if elapsed < self.scale_interval:
+            time.sleep(self.scale_interval - elapsed)
+        self._last_scale_time = time.time()
         """
         Read a 32-bit signed value from the load cell and return kilograms.
         """
@@ -94,6 +99,10 @@ class ModbusInterface:
         self.vfd.write_register(0x2001, speed, 0, functioncode=6)
 
     def set_valve(self, valve: str, action: str):
+        now = time.time()
+        elapsed = now - self._last_valve_time
+        if elapsed < self.valve_interval:
+            time.sleep(self.valve_interval - elapsed)
         """
         Control valves by aggregating into a single register write.
           valve: "left", "right", or "both"
@@ -119,11 +128,13 @@ class ModbusInterface:
         # Compute combined value: bit0=left, bit1=right
         combined = new_left + (new_right << 1)
 
-        # Write to the combined valve register (0x0080)
-        #try:
-        #    self.valves.write_register(0x0080, combined, 0, functioncode=6)
-        #except Exception as e:
-        #    logging.exception(f"Valves MODBUS error - {e}")
+        # Write combined valve state to single register
+        try:
+            self.valves.write_register(0x0080, combined, 0, functioncode=6)
+        except Exception:
+            logging.exception(f"Valves MODBUS error - {combined}")
+        # Update timestamp after successful write
+        self._last_valve_time = time.time()
 
     def poll(self):
         """
