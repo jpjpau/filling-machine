@@ -20,6 +20,9 @@
   "vfd_poll_interval":     0.1,
   "scale_poll_interval":   0.1,
   "valve_poll_interval":   0.1,
+  "vfd_interval":   0.05,  // seconds between VFD updates
+  "scale_interval": 0.02,  // seconds between load-cell reads
+  "valve_interval": 0.1,    // seconds between valve updates
 
   "flavours": {
     "Food_Service": 1.5,

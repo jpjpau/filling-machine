@@ -58,6 +58,12 @@ class MachineController:
         self._post_fill_delay  = config.get("post_fill_delay")      # e.g. 1.0s
         self._confirm_readings = config.get("confirm_readings")     # e.g. 3
         self._confirm_removals = config.get("confirm_removals")     # e.g. 3
+
+        # Modbus polling intervals
+        self._vfd_interval   = config.get("vfd_interval")    # e.g. 0.05s
+        self._scale_interval = config.get("scale_interval")  # e.g. 0.02s
+        self._valve_interval = config.get("valve_interval")  # e.g. 0.1s
+
         self.speed_fast        = config.get("fast_speed")           # e.g. 150.0 Hz
         self.speed_slow        = config.get("slow_speed")           # e.g. 50.0 Hz
 
@@ -117,7 +123,7 @@ class MachineController:
         """
         Start background threads for modbus, monitoring, and filling loops.
         """
-        for fn in (self._modbus_loop, self._monitor_loop, self._filling_loop):
+        for fn in (self._vfd_loop, self._valve_loop, self._scale_loop, self._monitor_loop, self._filling_loop):
             t = threading.Thread(target=fn, daemon=True)
             self._threads.append(t)
             t.start()
@@ -193,6 +199,47 @@ class MachineController:
             except Exception:
                 logging.exception("Error in modbus loop")
             time.sleep(self._read_interval)
+
+    def _vfd_loop(self) -> None:
+        """
+        Poll VFD commands at its own interval.
+        """
+        while not self.kill_all.is_set():
+            try:
+                self.modbus.set_vfd_state(self.vfd_state)
+                self.modbus.set_vfd_speed(self.vfd_speed)
+            except NoResponseError as e:
+                logging.debug(f"VFD no response: {e}")
+            except Exception:
+                logging.exception("Error in VFD loop")
+            time.sleep(self._vfd_interval)
+
+    def _valve_loop(self) -> None:
+        """
+        Poll valve states at their own interval.
+        """
+        while not self.kill_all.is_set():
+            try:
+                self.modbus.set_valve("left",  "open" if self.valve1 else "close")
+                self.modbus.set_valve("right", "open" if self.valve2 else "close")
+            except NoResponseError as e:
+                logging.debug(f"Valve no response: {e}")
+            except Exception:
+                logging.exception("Error in valve loop")
+            time.sleep(self._valve_interval)
+
+    def _scale_loop(self) -> None:
+        """
+        Poll load cell at its own interval.
+        """
+        while not self.kill_all.is_set():
+            try:
+                self.actual_weight = self.modbus.read_load_cell()
+            except NoResponseError as e:
+                logging.debug(f"Scale no response: {e}")
+            except Exception:
+                logging.exception("Error in scale loop")
+            time.sleep(self._scale_interval)
 
     def _monitor_loop(self) -> None:
         """
