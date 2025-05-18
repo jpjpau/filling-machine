@@ -276,8 +276,8 @@ class MachineController:
                             self._tare_weight = w
                             self._left_tare = w
                             self._mould_tare = w
-                            time.sleep(self._valve_delay)
                             self.valve1     = True
+                            time.sleep(self._valve_delay)
                             self.vfd_state  = self.vfd_run_cmd
                             self.vfd_speed  = int(self.speed_fast * 100)
                             self._state     = self.STATE_FILL_LEFT_FAST
