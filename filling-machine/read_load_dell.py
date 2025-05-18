@@ -24,27 +24,41 @@ def setup_instrument():
     inst.close_port_after_each_call = True
     return inst
 
-def read_weight(inst):
-    raw = inst.read_long(LOADCELL_REG, functioncode=FUNCTION_CODE)
-    # Convert two’s‐complement 32‐bit signed to Python int
+def read_raw(inst):
+    return inst.read_long(LOADCELL_REG, functioncode=FUNCTION_CODE)
+
+def raw_to_kg(raw):
+    # Convert two’s‐complement 32‐bit signed to Python int then grams→kg
     if raw > 0x7FFFFFFF:
         raw -= 0x100000000
-    return raw / 1000.0  # grams → kg
+    return raw / 1000.0
 
 def main():
     print(f"Connecting to load cell on {PORT} @ addr {SLAVE_ADDR}…")
     inst = setup_instrument()
+
+    # Tare: take a quick average of a few readings at startup
+    print("Taring...", end="", flush=True)
+    samples = []
+    for _ in range(5):
+        try:
+            samples.append(raw_to_kg(read_raw(inst)))
+        except Exception as e:
+            print(f"\n  Error during tare read: {e}")
+        time.sleep(0.1)
+    tare = sum(samples) / len(samples) if samples else 0.0
+    print(f" done. Tare offset = {tare:.3f} kg\n")
+
     try:
         while True:
             try:
-                w = read_weight(inst)
-                print(f"Weight: {w:.3f} kg")
+                w = raw_to_kg(read_raw(inst)) - tare
+                print(f"Weight: {w:+.3f} kg")
             except Exception as e:
                 print(f"Error reading load cell: {e}")
             time.sleep(0.25)
     except KeyboardInterrupt:
         print("\nExiting.")
-        # nothing special to close since we close port after each call
 
 if __name__ == '__main__':
     main()
