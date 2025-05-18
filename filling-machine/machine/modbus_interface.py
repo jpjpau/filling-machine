@@ -56,7 +56,12 @@ class ModbusInterface:
         self._last_valve_time = time.time()
 
         # Ensure both valves are closed at startup
-        self.set_valve("both", "close")
+        try:
+            self.set_valve("both", "close")
+        except minimalmodbus.NoResponseError as e:
+            logging.warning(f"Could not close valves at startup: {e}")
+        except Exception as e:
+            logging.warning(f"Unexpected error closing valves at startup: {e}")
 
     def read_load_cell(self) -> float:
         """
