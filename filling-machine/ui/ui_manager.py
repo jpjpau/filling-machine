@@ -10,15 +10,14 @@ class UIManager:
         self.controller = controller
         self.cleaning = False
 
-        # Increase button/tab font and padding for touchscreen
-        style = ttk.Style()
-        default_font = tkFont.Font(size=20)
-        style.configure('TNotebook.Tab', font=default_font, padding=[10, 10])
-        # Button style for large touchscreen buttons
-        style.configure('Large.TButton', font=default_font, padding=[10, 10])
-
         # Main window
         self.root = tk.Tk()
+        # Style configuration (after root exists to avoid stray windows)
+        style = ttk.Style(self.root)
+        style.theme_use('clam')
+        default_font = tkFont.Font(size=20)
+        style.configure('TNotebook.Tab', font=default_font, padding=[20, 20])
+        style.configure('Large.TButton', font=default_font, padding=[20, 20])
         self.root.title("Filling Machine Control")
         self.root.attributes('-fullscreen', True)
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
@@ -34,10 +33,10 @@ class UIManager:
         clean_frame = ttk.Frame(clean_tab)
         clean_frame.pack(pady=20)
         self.clean_button = ttk.Button(clean_frame, text="Clean", command=self.toggle_clean,
-                                       style='Large.TButton', width=12)
+                                       style='Large.TButton', width=20)
         self.clean_button.grid(row=0, column=0, padx=10)
         exit_button = ttk.Button(clean_frame, text="Exit", command=self.on_close,
-                                 style='Large.TButton', width=12)
+                                 style='Large.TButton', width=20)
         exit_button.grid(row=0, column=1, padx=10)
 
         # --- Fill Tab ---
@@ -107,7 +106,7 @@ class UIManager:
         prime_frame = ttk.Frame(fill_tab)
         prime_frame.pack(pady=10)
         self.prime_button = ttk.Button(prime_frame, text="Prime",
-                                       style='Large.TButton', width=16)
+                                       style='Large.TButton', width=20)
         self.prime_button.pack()
         self.prime_button.bind("<ButtonPress>", self.on_prime_press)
         self.prime_button.bind("<ButtonRelease>", self.on_prime_release)
@@ -143,7 +142,7 @@ class UIManager:
             ttk.Button(f_frame, text="−", command=lambda f=flavour: self.adjust_flavour(f, -0.1),
                        style='Large.TButton', width=4).pack(side="right", padx=2)
         save_btn = ttk.Button(adjust_frame, text="Save Flavours", command=self.save_flavours,
-                              style='Large.TButton', width=16)
+                              style='Large.TButton', width=20)
         save_btn.pack(pady=5)
 
         # Kick off update loop
