@@ -63,6 +63,10 @@ class ModbusInterface:
         except Exception as e:
             logging.warning(f"Unexpected error closing valves at startup: {e}")
 
+        # Track current valve states for combined register writes
+        self._valve1_state = 0
+        self._valve2_state = 0
+
     def read_load_cell(self) -> float:
         """
         Read a 32-bit signed value from the load cell and return kilograms.
@@ -91,30 +95,35 @@ class ModbusInterface:
 
     def set_valve(self, valve: str, action: str):
         """
-        Control one or both valves by name.
+        Control valves by aggregating into a single register write.
           valve: "left", "right", or "both"
           action: "open" or "close"
         """
-        # Map valve names to coil indices
-        mapping = {"left": 0, "right": 1}
+        # Determine new individual valve states
         if valve == "both":
-            coils = list(mapping.values())
-        elif valve in mapping:
-            coils = [mapping[valve]]
+            new_left  = 1 if action == "open" else 0
+            new_right = 1 if action == "open" else 0
+        elif valve == "left":
+            new_left  = 1 if action == "open" else 0
+            new_right = self._valve2_state
+        elif valve == "right":
+            new_left  = self._valve1_state
+            new_right = 1 if action == "open" else 0
         else:
             raise ValueError(f"Unknown valve: {valve}")
 
-        # Determine bit value and validate action
-        if action == "open":
-            bit = 1
-        elif action == "close":
-            bit = 0
-        else:
-            raise ValueError(f"Unknown action: {action}")
+        # Update stored states
+        self._valve1_state = new_left
+        self._valve2_state = new_right
 
-        for coil in coils:
-            self.valves.write_bit(coil, bit)
+        # Compute combined value: bit0=left, bit1=right
+        combined = new_left + (new_right << 1)
 
+        # Write to the combined valve register (0x0080)
+        try:
+            self.valves.write_register(0x0080, combined, 0, functioncode=6)
+        except Exception as e:
+            logging.exception(f"Valves MODBUS error - {e}")
 
     def poll(self):
         """
