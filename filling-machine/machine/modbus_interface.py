@@ -120,10 +120,10 @@ class ModbusInterface:
         combined = new_left + (new_right << 1)
 
         # Write to the combined valve register (0x0080)
-        try:
-            self.valves.write_register(0x0080, combined, 0, functioncode=6)
-        except Exception as e:
-            logging.exception(f"Valves MODBUS error - {e}")
+        #try:
+        #    self.valves.write_register(0x0080, combined, 0, functioncode=6)
+        #except Exception as e:
+        #    logging.exception(f"Valves MODBUS error - {e}")
 
     def poll(self):
         """
