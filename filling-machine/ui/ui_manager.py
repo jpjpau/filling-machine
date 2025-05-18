@@ -47,6 +47,36 @@ class UIManager:
         )
         self.flavour_menu.pack(fill="x", padx=5)
 
+        # Flavour adjustment controls
+        adjust_frame = ttk.LabelFrame(fill_tab, text="Settings")
+        adjust_frame.pack(fill="x", padx=10, pady=5)
+        self.flavour_vars = {}
+        for flavour in self.controller.config.volumes.keys():
+            f_frame = ttk.Frame(adjust_frame)
+            f_frame.pack(fill="x", pady=2)
+            ttk.Label(f_frame, text=flavour).pack(side="left", padx=5)
+            var = tk.DoubleVar(value=self.controller.config.get(flavour))
+            self.flavour_vars[flavour] = var
+            ttk.Label(f_frame, textvariable=var, width=6).pack(side="right", padx=5)
+            ttk.Button(f_frame, text="+", width=2,
+                command=lambda f=flavour: self.adjust_flavour(f, 0.1)
+            ).pack(side="right")
+            ttk.Button(f_frame, text="−", width=2,
+                command=lambda f=flavour: self.adjust_flavour(f, -0.1)
+            ).pack(side="right", padx=2)
+        save_btn = ttk.Button(adjust_frame, text="Save Flavours", command=self.save_flavours)
+        save_btn.pack(pady=5)
+    def adjust_flavour(self, flavour, delta):
+        """Adjust a flavour volume by delta and update config."""
+        current = self.controller.config.get(flavour)
+        new_val = round(current + delta, 2)
+        self.controller.config.set(flavour, new_val)
+        self.flavour_vars[flavour].set(new_val)
+
+    def save_flavours(self):
+        """Persist flavour changes to config.json."""
+        self.controller.config.save()
+
         # Weight display
         weight_frame = ttk.LabelFrame(fill_tab, text="Weight (kg)")
         weight_frame.pack(fill="x", padx=10, pady=5)

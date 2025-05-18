@@ -1,6 +1,7 @@
 import minimalmodbus
 import serial
 import logging
+import time
 
 class ModbusInterface:
     """
@@ -10,7 +11,7 @@ class ModbusInterface:
       - Valve controller (address 3, RTU mode, 9600 baud, /dev/ttySC0)
     """
 
-    def __init__(self):
+    def __init__(self, config):
         # VFD (turny_boi)
         self.vfd = minimalmodbus.Instrument("/dev/ttySC1", 2, minimalmodbus.MODE_ASCII)
         #self.vfd.mode    = minimalmodbus.MODE_ASCII
@@ -43,6 +44,16 @@ class ModbusInterface:
         self.valves.serial.stopbits = 1
         self.valves.clear_buffers_before_each_transaction = True
         self.valves.close_port_after_each_call            = True
+
+        # Poll intervals (seconds) for each device
+        self.vfd_interval   = config.get("vfd_poll_interval")
+        self.scale_interval = config.get("scale_poll_interval")
+        self.valve_interval = config.get("valve_poll_interval")
+
+        # Track last poll times
+        self._last_vfd_time   = time.time()
+        self._last_scale_time = time.time()
+        self._last_valve_time = time.time()
 
     def read_load_cell(self) -> float:
         """
@@ -94,3 +105,31 @@ class ModbusInterface:
 
         for coil in coils:
             self.valves.write_bit(coil, bit)
+
+
+    def poll(self):
+        """
+        Poll each Modbus device when its configured interval elapses.
+        Returns a dict with keys for whichever device(s) were polled:
+          - 'scale': latest load-cell reading (kg)
+          - 'vfd':   latest VFD status word
+          - 'valves': {'left': bit0, 'right': bit1}
+        """
+        now = time.time()
+        result = {}
+        # Scale (load cell)
+        if now - self._last_scale_time >= self.scale_interval:
+            result['scale'] = self.read_load_cell()
+            self._last_scale_time = now
+        # VFD status register (0x2002)
+        if now - self._last_vfd_time >= self.vfd_interval:
+            result['vfd'] = self.vfd.read_register(0x2002, 0, functioncode=3)
+            self._last_vfd_time = now
+        # Valve coils
+        if now - self._last_valve_time >= self.valve_interval:
+            result['valves'] = {
+                'left':  self.valves.read_bit(0, functioncode=1),
+                'right': self.valves.read_bit(1, functioncode=1)
+            }
+            self._last_valve_time = now
+        return result
