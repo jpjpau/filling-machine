@@ -9,7 +9,7 @@ def main():
     cfg = Config()
 
     # 2. Initialize hardware interfaces
-    modbus = ModbusInterface()
+    modbus = ModbusInterface(config)
     mqtt   = MqttClient(cfg)
 
     # 3. Create controller and UI
