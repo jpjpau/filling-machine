@@ -67,7 +67,7 @@ class ModbusInterface:
         """
         Read a 32-bit signed value from the load cell and return kilograms.
         """
-        raw = self.scale.read_long(0x0000, functioncode=3)
+        raw = self.scale.read_long(0x0000, functioncode=3, False, 0)
         if raw > 0x7FFFFFFF:
             raw -= 0x100000000
         return raw / 1000.0
