@@ -74,6 +74,11 @@ class MachineController:
         self._clean_stop   = threading.Event()
         self._clean_thread = None
 
+        # Pour tracking
+        self._left_tare = None
+        self._right_tare = None
+        self._mould_tare = None  # the weight when tray + moulds first detected
+
     def select_flavour(self, name: str) -> None:
         """
         Change target volume and mould weight based on flavour.
@@ -82,6 +87,31 @@ class MachineController:
         # Update mould weight from nested mould_weights
         self.mould_weight   = self.config.mould_weights.get(name)
         logging.info(f"Flavour selected: {name}, volume={self.desired_volume}, mould={self.mould_weight}")
+
+    @property
+    def current_left_pour(self) -> float:
+        """
+        How much has been poured into the left mould so far (clamped to [0, desired_volume]).
+        """
+        if self._left_tare is None:
+            return 0.0
+        poured = self.actual_weight - self._left_tare
+        return max(0.0, min(self.desired_volume, poured))
+
+    @property
+    def current_right_pour(self) -> float:
+        """
+        How much has been poured into the right mould so far (clamped to [0, desired_volume]).
+        """
+        if self._right_tare is None:
+            return 0.0
+        poured = self.actual_weight - self._right_tare
+        return max(0.0, min(self.desired_volume, poured))
+
+    @property
+    def mould_tare_weight(self) -> float:
+        """Weight of tray + moulds when first placed (before filling)."""
+        return 0.0 if self._mould_tare is None else self._mould_tare
 
     def start(self) -> None:
         """
@@ -244,6 +274,8 @@ class MachineController:
                         if self._consec_count >= self._confirm_readings:
                             # Record tare and start left fill
                             self._tare_weight = w
+                            self._left_tare = w
+                            self._mould_tare = w
                             time.sleep(self._valve_delay)
                             self.valve1     = True
                             self.vfd_state  = self.vfd_run_cmd
@@ -272,6 +304,7 @@ class MachineController:
                 # 4) Prep right: open valve, start fast fill
                 elif self._state == self.STATE_PREP_RIGHT:
                     self._consec_count = 0
+                    self._right_tare = w
                     self._tare_weight  = w
                     self.valve2        = True
                     self.vfd_state     = self.vfd_run_cmd

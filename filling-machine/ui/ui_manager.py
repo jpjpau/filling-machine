@@ -66,6 +66,18 @@ class UIManager:
         )
         self.weight_label.pack(padx=5, pady=5)
 
+        # --- Measurements ---
+        meas_frame = ttk.LabelFrame(fill_tab, text="Measurements")
+        meas_frame.pack(fill="x", padx=10, pady=5)
+        self.total_weight_label = ttk.Label(meas_frame, text=f"Total: {self.controller.actual_weight:.2f} kg", font=(None, 16))
+        self.total_weight_label.pack(anchor="w", padx=5)
+        self.tare_weight_label = ttk.Label(meas_frame, text=f"Tare: {self.controller._tare_weight:.2f} kg", font=(None, 16))
+        self.tare_weight_label.pack(anchor="w", padx=5)
+        self.left_pour_label = ttk.Label(meas_frame, text="Left Pour: 0.00 kg", font=(None, 16))
+        self.left_pour_label.pack(anchor="w", padx=5)
+        self.right_pour_label = ttk.Label(meas_frame, text="Right Pour: 0.00 kg", font=(None, 16))
+        self.right_pour_label.pack(anchor="w", padx=5)
+
         # Speed settings
         speed_frame = ttk.LabelFrame(fill_tab, text="VFD Speed Settings")
         speed_frame.pack(fill="x", padx=10, pady=5)
@@ -137,9 +149,9 @@ class UIManager:
             var = tk.DoubleVar(value=self.controller.config.get(flavour))
             self.flavour_vars[flavour] = var
             ttk.Label(f_frame, textvariable=var, width=6).pack(side="right", padx=5)
-            ttk.Button(f_frame, text="+", command=lambda f=flavour: self.adjust_flavour(f, 0.1),
+            ttk.Button(f_frame, text="+", command=lambda f=flavour: self.adjust_flavour(f, 0.01),
                        style='Large.TButton', width=4).pack(side="right")
-            ttk.Button(f_frame, text="−", command=lambda f=flavour: self.adjust_flavour(f, -0.1),
+            ttk.Button(f_frame, text="−", command=lambda f=flavour: self.adjust_flavour(f, -0.01),
                        style='Large.TButton', width=4).pack(side="right", padx=2)
         save_btn = ttk.Button(adjust_frame, text="Save Flavours", command=self.save_flavours,
                               style='Large.TButton', width=20)
@@ -207,5 +219,18 @@ class UIManager:
         self.status_label.config(text=self.controller._state)
         self.fast_speed_label.config(text=f"{self.controller.speed_fast:.2f} Hz")
         self.slow_speed_label.config(text=f"{self.controller.speed_slow:.2f} Hz")
+        # Update measurements
+        self.total_weight_label.config(text=f"Total: {self.controller.actual_weight:.2f} kg")
+        self.tare_weight_label.config(text=f"Tare: {self.controller._tare_weight:.2f} kg")
+        # Compute left pour only during left fill states
+        left_pour = 0.0
+        if self.controller._state in (self.controller.STATE_FILL_LEFT_FAST, self.controller.STATE_FILL_LEFT_SLOW):
+            left_pour = self.controller.actual_weight - self.controller._tare_weight
+        self.left_pour_label.config(text=f"Left Pour: {left_pour:.2f} kg")
+        # Compute right pour only during right fill states
+        right_pour = 0.0
+        if self.controller._state in (self.controller.STATE_FILL_RIGHT_FAST, self.controller.STATE_FILL_RIGHT_SLOW):
+            right_pour = self.controller.actual_weight - self.controller._tare_weight
+        self.right_pour_label.config(text=f"Right Pour: {right_pour:.2f} kg")
         # Schedule next update
         self.root.after(100, self.update_ui)
