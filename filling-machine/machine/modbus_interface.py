@@ -55,6 +55,9 @@ class ModbusInterface:
         self._last_scale_time = time.time()
         self._last_valve_time = time.time()
 
+        # Ensure both valves are closed at startup
+        self.set_valve("both", "close")
+
     def read_load_cell(self) -> float:
         """
         Read a 32-bit signed value from the load cell and return kilograms.
