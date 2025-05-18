@@ -38,7 +38,7 @@ class ModbusInterface:
         self.valves = minimalmodbus.Instrument("/dev/ttySC0", 3)
         self.valves.mode    = minimalmodbus.MODE_RTU
         self.valves.serial.baudrate = 9600
-        self.valves.serial.timeout  = 0.1
+        self.valves.serial.timeout  = 0.4
         self.valves.serial.parity   = minimalmodbus.serial.PARITY_NONE
         self.valves.serial.bytesize = 8
         self.valves.serial.stopbits = 1
