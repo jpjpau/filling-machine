@@ -174,7 +174,7 @@ class UIManager:
             ttk.Button(parent, text="+", command=lambda f=flavour: self.adjust_flavour(f, 0.01),
                        style='Small.TButton', width=2).grid(row=row, column=3)
         save_btn = ttk.Button(adjust_frame, text="Save Flavours", command=self.save_flavours,
-                              style='Large.TButton', width=20)
+                              style='Small.TButton', width=10)
         save_btn.grid(row=1, column=0, columnspan=2, pady=5)
 
         # Kick off update loop
