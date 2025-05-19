@@ -3,6 +3,7 @@ import minimalmodbus
 import serial
 import time
 import logging
+import subprocess
 
 # WAVESHARE Modbus RTU 8-ch Relay V3 – Channel mapping:
 #  Relay 1 → coil address 0x0000 (instrument.write_bit(0,...))
@@ -15,7 +16,14 @@ logger = logging.getLogger(__name__)
 
 
 def main():
+    # Kill any process holding the serial port
+    try:
+        subprocess.run(["fuser", "-k", "/dev/ttyCH9344USB0"], check=True)
+        logger.info("Killed processes using /dev/ttyCH9344USB0")
+    except Exception as e:
+        logger.warning(f"Failed to kill processes using /dev/ttyCH9344USB0: {e}")
     # Configure the valve controller instrument
+    time.sleep(1)  # Wait for the serial port to be released
     instrument = minimalmodbus.Instrument("/dev/ttyCH9344USB0", 1)  # port, slave address
     instrument.mode = minimalmodbus.MODE_RTU
     instrument.serial.baudrate = 9600
