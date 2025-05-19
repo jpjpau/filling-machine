@@ -22,22 +22,22 @@ def main():
 
     try:
         # Open left valve (coil 1)
-        instrument.write_bit(1, 1)
+        instrument.write_bit(0x0000, 0xFF00)
         logger.info("Left valve opened")
         time.sleep(1)
 
         # Close left valve
-        instrument.write_bit(1, 0)
+        instrument.write_bit(0x0000, 0x0000)
         logger.info("Left valve closed")
         time.sleep(1)
 
         # Open right valve (coil 2)
-        instrument.write_bit(2, 1)
+        instrument.write_bit(0x0001, 0xFF00)
         logger.info("Right valve opened")
         time.sleep(1)
 
         # Close right valve
-        instrument.write_bit(2, 0)
+        instrument.write_bit(0x0001, 0x0000)
         logger.info("Right valve closed")
 
     except Exception as e:
