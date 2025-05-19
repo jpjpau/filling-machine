@@ -165,16 +165,14 @@ class UIManager:
         for idx, flavour in enumerate(flavours):
             parent = left_adjust_frame if idx < half else right_adjust_frame
             row = idx if idx < half else idx - half
-            f_frame = ttk.Frame(parent)
-            f_frame.grid(row=row, column=0, sticky="w", pady=2)
-            ttk.Label(f_frame, text=flavour).pack(side="left", padx=5)
+            ttk.Label(parent, text=flavour).grid(row=row, column=0, sticky="w", padx=5)
             var = tk.DoubleVar(value=self.controller.config.get(flavour))
             self.flavour_vars[flavour] = var
-            ttk.Label(f_frame, textvariable=var, width=6).pack(side="right", padx=5)
-            ttk.Button(f_frame, text="+", command=lambda f=flavour: self.adjust_flavour(f, 0.01),
-                       style='Small.TButton', width=2).pack(side="right")
-            ttk.Button(f_frame, text="−", command=lambda f=flavour: self.adjust_flavour(f, -0.01),
-                       style='Small.TButton', width=2).pack(side="right", padx=2)
+            ttk.Label(parent, textvariable=var, width=6).grid(row=row, column=1, padx=5)
+            ttk.Button(parent, text="−", command=lambda f=flavour: self.adjust_flavour(f, -0.01),
+                       style='Small.TButton', width=2).grid(row=row, column=2, padx=2)
+            ttk.Button(parent, text="+", command=lambda f=flavour: self.adjust_flavour(f, 0.01),
+                       style='Small.TButton', width=2).grid(row=row, column=3)
         save_btn = ttk.Button(adjust_frame, text="Save Flavours", command=self.save_flavours,
                               style='Large.TButton', width=20)
         save_btn.grid(row=1, column=0, columnspan=2, pady=5)
