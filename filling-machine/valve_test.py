@@ -45,24 +45,24 @@ def main():
 
     try:
         # Open left valve (Channel 1, register 0x0000) – Write Single Coil (Function 05), 0xFF00 = ON
-        #instrument.write_bit(0x0000, 1)
+        instrument.write_bit(0x0000, 1)
         logger.info("Left valve opened")
-        #time.sleep(2)
+        time.sleep(2)
 
         # Close left valve (Channel 1) – 0x0000 = OFF
-        #instrument.write_bit(0x0000, 0)
+        instrument.write_bit(0x0000, 0)
         logger.info("Left valve closed")
-        #time.sleep(2)
+        time.sleep(2)
 
         # Open right valve (Channel 2, register 0x0001) – 0xFF00 = ON
-        #instrument.write_bit(1, 1)
+        instrument.write_bit(1, 1)
         logger.info("Right valve opened")
-        #time.sleep(2)
+        time.sleep(2)
 
         # Close right valve (Channel 2) – 0x0000 = OFF
-        #instrument.write_bit(1, 0)
+        instrument.write_bit(1, 0)
         logger.info("Right valve closed")
-        #time.sleep(1)
+        time.sleep(1)
         
         #Cycle through 4 valves (channels 1-4)
         for coil in range(4):
