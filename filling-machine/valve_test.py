@@ -27,7 +27,7 @@ def main():
     instrument = minimalmodbus.Instrument("/dev/ttyCH9344USB0", 1)  # port, slave address
     instrument.mode = minimalmodbus.MODE_RTU
     instrument.serial.baudrate = 9600
-    instrument.serial.timeout = 0.1
+    instrument.serial.timeout = 0.05
     instrument.serial.parity = serial.PARITY_NONE
     instrument.serial.bytesize = 8
     instrument.serial.stopbits = 1
@@ -72,16 +72,17 @@ def main():
         # logger.info("Right valve closed")
         # time.sleep(1)
         
-        #Cycle through 4 valves (channels 1-4)
-        for coil in range(8):
-            # Open valve (Function 05, 0xFF00)
-            instrument.write_bit(coil, 1)
-            logger.info(f"Valve {coil+1} opened")
-            time.sleep(0.2)
-            # Close valve (0x0000)
-            instrument.write_bit(coil, 0)
-            logger.info(f"Valve {coil+1} closed")
-            time.sleep(0.2)
+        # Cycle through 8 valves 10 times.
+        for cycle in range(10):
+            for coil in range(8):
+                # Open valve (Function 05, 0xFF00)
+                instrument.write_bit(coil, 1)
+                logger.info(f"Valve {coil+1} opened")
+                time.sleep(0.1)
+                # Close valve (0x0000)
+                instrument.write_bit(coil, 0)
+                logger.info(f"Valve {coil+1} closed")
+                time.sleep(0.1)
 
     except Exception as e:
         logger.error("Modbus error during valve cycle", exc_info=e)
