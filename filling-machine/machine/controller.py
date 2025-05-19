@@ -241,7 +241,7 @@ class MachineController:
                 logging.debug(f"Scale no response: {e}")
             except Exception:
                 logging.exception("Error in scale loop")
-            time.sleep(self._scale_interval)
+            # time.sleep(self._scale_interval)
 
     def _monitor_loop(self) -> None:
         """

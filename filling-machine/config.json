@@ -1,7 +1,7 @@
 {
   "mqttBroker": "192.168.15.6",
   "loadcell_interval": 0.5,
-  "valve_start_delay": 0.1,
+  "valve_start_delay": 0.5,
   "post_fill_delay": 0.5,
   "mould_tolerance": 0.20,
   "fill_tolerance": 0.30,
@@ -19,10 +19,10 @@
   "vfd_stop_command": 1,
   "vfd_poll_interval":     0.1,
   "scale_poll_interval":   0.1,
-  "valve_poll_interval":   0.4,
+  "valve_poll_interval":   0.1,
   "vfd_interval":   0.1,
   "scale_interval": 0.1,
-  "valve_interval": 0.4,
+  "valve_interval": 0.1,
 
   "flavours": {
     "Food_Service": 1.5,
