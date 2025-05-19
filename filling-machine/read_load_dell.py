@@ -9,7 +9,7 @@ import sys
 PORT       = '/dev/ttyCH9344USB1'
 SLAVE_ADDR = 1
 BAUDRATE   = 9600
-TIMEOUT    = 0.2
+TIMEOUT    = 0.05
 
 # Register address and function code
 LOADCELL_REG    = 0x0000
@@ -52,7 +52,7 @@ def main():
     print(f" done. Tare offset = {tare:.3f} kg\n")
 
     # Frequency sweep test variables
-    start_interval = 0.25
+    start_interval = 0.1
     min_interval = 0.001
     step = 0.01
     reads_per_test = 50
