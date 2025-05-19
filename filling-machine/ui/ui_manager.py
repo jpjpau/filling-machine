@@ -38,10 +38,10 @@ class UIManager:
         clean_frame = ttk.Frame(clean_tab)
         clean_frame.pack(pady=20)
         self.clean_button = ttk.Button(clean_frame, text="Clean", command=self.toggle_clean,
-                                       style='Large.TButton', width=20)
+                                       style='Large.TButton', width=16)
         self.clean_button.grid(row=0, column=0, padx=10)
         exit_button = ttk.Button(clean_frame, text="Exit", command=self.on_close,
-                                 style='Large.TButton', width=20)
+                                 style='Large.TButton', width=16)
         exit_button.grid(row=0, column=1, padx=10)
 
         # --- Fill Tab ---
