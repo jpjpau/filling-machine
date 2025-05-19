@@ -4,7 +4,7 @@ import serial
 import time
 
 # --- Load‐cell Modbus settings (match your ModbusInterface) ---
-PORT       = '/dev/ttySC0'
+PORT       = '/dev/ttyCH9344USB1'
 SLAVE_ADDR = 1
 BAUDRATE   = 9600
 TIMEOUT    = 0.2
