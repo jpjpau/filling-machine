@@ -69,14 +69,32 @@ class UIManager:
         # --- Measurements ---
         meas_frame = ttk.LabelFrame(fill_tab, text="Measurements")
         meas_frame.pack(fill="x", padx=10, pady=5)
-        self.total_weight_label = ttk.Label(meas_frame, text=f"Total: {self.controller.actual_weight:.2f} kg", font=(None, 16))
-        self.total_weight_label.pack(anchor="w", padx=5)
-        self.tare_weight_label = ttk.Label(meas_frame, text=f"Tare: {self.controller._tare_weight:.2f} kg", font=(None, 16))
-        self.tare_weight_label.pack(anchor="w", padx=5)
-        self.left_pour_label = ttk.Label(meas_frame, text="Left Pour: 0.00 kg", font=(None, 16))
-        self.left_pour_label.pack(anchor="w", padx=5)
-        self.right_pour_label = ttk.Label(meas_frame, text="Right Pour: 0.00 kg", font=(None, 16))
-        self.right_pour_label.pack(anchor="w", padx=5)
+        # Layout measurement labels in a row
+        font_size = 14
+        self.total_weight_label = ttk.Label(
+            meas_frame,
+            text=f"Total: {self.controller.actual_weight:.2f} kg",
+            font=(None, font_size)
+        )
+        self.total_weight_label.grid(row=0, column=0, padx=10, pady=5, sticky="w")
+        self.tare_weight_label = ttk.Label(
+            meas_frame,
+            text=f"Tare: {self.controller._tare_weight:.2f} kg",
+            font=(None, font_size)
+        )
+        self.tare_weight_label.grid(row=0, column=1, padx=10, pady=5, sticky="w")
+        self.left_pour_label = ttk.Label(
+            meas_frame,
+            text="Left Pour: 0.00 kg",
+            font=(None, font_size)
+        )
+        self.left_pour_label.grid(row=0, column=2, padx=10, pady=5, sticky="w")
+        self.right_pour_label = ttk.Label(
+            meas_frame,
+            text="Right Pour: 0.00 kg",
+            font=(None, font_size)
+        )
+        self.right_pour_label.grid(row=0, column=3, padx=10, pady=5, sticky="w")
 
         # Speed settings
         speed_frame = ttk.LabelFrame(fill_tab, text="VFD Speed Settings")

@@ -82,8 +82,9 @@ class ModbusInterface:
             time.sleep(self.scale_interval - elapsed)
 
         # serialize access to the scale
-        with self._scale_lock:
-            raw = self.scale.read_long(0x0000, 3, False, 0)
+        # with self._scale_lock:
+        #     raw = self.scale.read_long(0x0000, 3, False, 0)
+        raw = self.scale.read_long(0x0000, 3, False, 0)
         if raw > 0x7FFFFFFF:
             raw -= 0x100000000
 
