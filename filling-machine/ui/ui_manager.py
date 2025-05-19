@@ -28,6 +28,8 @@ class UIManager:
         # Tabs
         self.notebook = ttk.Notebook(self.root)
         self.notebook.pack(fill='both', expand=True)
+        # Enable filling only when Fill tab is selected
+        self.notebook.bind("<<NotebookTabChanged>>", self.on_tab_changed)
 
         # --- Clean Tab ---
         clean_tab = ttk.Frame(self.notebook)
@@ -223,6 +225,12 @@ class UIManager:
         self.controller.vfd_speed = 0
         self.controller.modbus.set_valve("both", "close")
 
+    def on_tab_changed(self, event):
+        """Enable filling in controller when Fill tab is selected."""
+        selected = self.notebook.tab(self.notebook.select(), "text")
+        if selected == "Fill":
+            self.controller.enable_filling()
+
     def toggle_clean(self):
         if not self.cleaning:
             self.clean_button.config(text="Stop")
@@ -259,4 +267,4 @@ class UIManager:
         self.left_pour_label.config(text=f"Left Pour: {left_pour:.2f} kg")
         self.right_pour_label.config(text=f"Right Pour: {right_pour:.2f} kg")
         # Schedule next update
-        self.root.after(50, self.update_ui)
+        self.root.after(30, self.update_ui)

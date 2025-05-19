@@ -1,6 +1,6 @@
 {
   "mqttBroker": "192.168.15.6",
-  "loadcell_interval": 0.5,
+  "controller_interval": 0.05,
   "valve_start_delay": 0.5,
   "post_fill_delay": 0.2,
   "mould_tolerance": 0.20,
@@ -18,10 +18,10 @@
   "vfd_run_command": 2,
   "vfd_stop_command": 1,
   "vfd_poll_interval":     0.05,
-  "scale_poll_interval":   0.05,
+  "scale_poll_interval":   0.03,
   "valve_poll_interval":   0.05,
   "vfd_interval":   0.1,
-  "scale_interval": 0.1,
+  "scale_interval": 0.05,
   "valve_interval": 0.1,
 
   "flavours": {

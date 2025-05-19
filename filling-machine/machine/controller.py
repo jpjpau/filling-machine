@@ -53,7 +53,7 @@ class MachineController:
         self._mould_tol        = config.get("mould_tolerance")      # ±10% example
         self._fill_tol         = config.get("fill_tolerance")       # ±15%
         self._removal_tol      = config.get("removal_tolerance")    # e.g. 0.02 kg
-        self._read_interval    = config.get("loadcell_interval")    # e.g. 0.1s
+        self._read_interval    = config.get("controller_interval")    # e.g. 0.1s
         self._valve_delay      = config.get("valve_start_delay")    # e.g. 0.1s
         self._post_fill_delay  = config.get("post_fill_delay")      # e.g. 1.0s
         self._confirm_readings = config.get("confirm_readings")     # e.g. 3
@@ -88,6 +88,9 @@ class MachineController:
         self._last_left_pour = 0.0
         self._last_right_pour = 0.0
 
+        # Fill activation event, only start filling when UI Fill tab selected
+        self._filling_event = threading.Event()
+
     def select_flavour(self, name: str) -> None:
         """
         Change target volume and mould weight based on flavour.
@@ -96,6 +99,10 @@ class MachineController:
         # Update mould weight from nested mould_weights
         self.mould_weight   = self.config.mould_weights.get(name)
         logging.info(f"Flavour selected: {name}, volume={self.desired_volume}, mould={self.mould_weight}")
+
+    def enable_filling(self) -> None:
+        """Allow filling loop to start after UI Fill tab selected."""
+        self._filling_event.set()
 
     @property
     def current_left_pour(self) -> float:
@@ -191,24 +198,6 @@ class MachineController:
 
         logging.info("MachineController: stopped")
 
-
-    # def _modbus_loop(self) -> None:
-    #     """
-    #     Apply current VFD/valve state and read the load cell.
-    #     """
-    #     while not self.kill_all.is_set():
-    #         try:
-    #             self.modbus.set_vfd_state(self.vfd_state)
-    #             self.modbus.set_vfd_speed(self.vfd_speed)
-    #             self.modbus.set_valve("left",  "open" if self.valve1 else "close")
-    #             self.modbus.set_valve("right", "open" if self.valve2 else "close")
-    #             self.actual_weight = self.modbus.read_load_cell()
-    #         except NoResponseError as e:
-    #             # Non‐fatal: instrument didn’t answer this cycle
-    #             logging.debug(f"Modbus no response (will retry): {e}")
-    #         except Exception:
-    #             logging.exception("Error in modbus loop")
-    #         time.sleep(self._read_interval)
 
     def _vfd_loop(self) -> None:
         """
@@ -315,6 +304,8 @@ class MachineController:
         """
         Full multi-stage fill state machine.
         """
+        # Wait until UI triggers filling
+        self._filling_event.wait()
         while not self.kill_all.is_set():
             try:
                 w = self.actual_weight
@@ -358,7 +349,7 @@ class MachineController:
                         self.vfd_state = self.vfd_stop_cmd
                         time.sleep(self._post_fill_delay)
                         self.valve1 = False
-                        time.sleep(self._post_fill_delay)
+                        #time.sleep(self._post_fill_delay)
                         # Prepare right fill
                         self._state = self.STATE_PREP_RIGHT
 
