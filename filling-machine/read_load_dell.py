@@ -2,6 +2,8 @@
 import minimalmodbus
 import serial
 import time
+import statistics
+import sys
 
 # --- Load‐cell Modbus settings (match your ModbusInterface) ---
 PORT       = '/dev/ttyCH9344USB1'
@@ -49,16 +51,36 @@ def main():
     tare = sum(samples) / len(samples) if samples else 0.0
     print(f" done. Tare offset = {tare:.3f} kg\n")
 
-    try:
-        while True:
+    # Frequency sweep test variables
+    start_interval = 0.25
+    min_interval = 0.001
+    step = 0.01
+    reads_per_test = 50
+
+    interval = start_interval
+    print("Starting frequency sweep...")
+    while interval >= min_interval:
+        successes = []
+        errors = 0
+        print(f"\nTesting interval = {interval:.3f}s ...", end="", flush=True)
+        for i in range(reads_per_test):
+            t0 = time.time()
             try:
-                w = raw_to_kg(read_raw(inst)) - tare
-                print(f"Weight: {w:+.3f} kg")
+                raw = read_raw(inst)
+                w = raw_to_kg(raw) - tare
+                successes.append(time.time() - t0)
             except Exception as e:
-                print(f"Error reading load cell: {e}")
-            time.sleep(0.25)
-    except KeyboardInterrupt:
-        print("\nExiting.")
+                errors += 1
+            time.sleep(interval)
+        if successes:
+            avg = statistics.mean(successes)
+            stddev = statistics.stdev(successes) if len(successes) > 1 else 0.0
+            print(f" Successes={len(successes)}/{reads_per_test}, errors={errors}, avg_read={avg*1000:.1f}ms ±{stddev*1000:.1f}ms")
+        else:
+            print(f" All {reads_per_test} reads failed.")
+        interval -= step
+    print("\nFrequency sweep complete.")
+    sys.exit(0)
 
 if __name__ == '__main__':
     main()

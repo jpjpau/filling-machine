@@ -98,8 +98,8 @@ class UIManager:
         self.fast_speed_var = tk.DoubleVar(value=self.controller.speed_fast)
         ttk.Scale(
             speed_frame,
-            from_=50,
-            to=150,
+            from_=5,
+            to=50,
             variable=self.fast_speed_var,
             command=self.on_fast_speed_change
         ).pack(fill="x", padx=5)
@@ -114,8 +114,8 @@ class UIManager:
         self.slow_speed_var = tk.DoubleVar(value=self.controller.speed_slow)
         ttk.Scale(
             speed_frame,
-            from_=5,
-            to=50,
+            from_=0.5,
+            to=10,
             variable=self.slow_speed_var,
             command=self.on_slow_speed_change
         ).pack(fill="x", padx=5)
@@ -173,7 +173,7 @@ class UIManager:
                        style='Small.TButton', width=2).grid(row=row, column=2, padx=2)
             ttk.Button(parent, text="+", command=lambda f=flavour: self.adjust_flavour(f, 0.01),
                        style='Small.TButton', width=2).grid(row=row, column=3)
-        save_btn = ttk.Button(adjust_frame, text="Save Flavours", command=self.save_flavours,
+        save_btn = ttk.Button(adjust_frame, text="Save Settings", command=self.save_flavours,
                               style='Small.TButton', width=10)
         save_btn.grid(row=1, column=0, columnspan=2, pady=5)
 
