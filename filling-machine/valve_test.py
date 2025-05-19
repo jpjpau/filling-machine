@@ -23,8 +23,11 @@ def main():
     instrument.serial.parity = serial.PARITY_NONE
     instrument.serial.bytesize = 8
     instrument.serial.stopbits = 1
-    instrument.clear_buffers_before_each_transaction = True
-    instrument.close_port_after_each_call = True
+    # Ensure serial buffers are cleared before each transaction if supported
+    if hasattr(instrument, 'clear_buffers_before_each_transaction'):
+        instrument.clear_buffers_before_each_transaction = True
+    # Keep the serial port open for consecutive write_bit calls
+    instrument.close_port_after_each_call = False
 
     try:
         # Open left valve (Channel 1, register 0x0000) – Write Single Coil (Function 05), 0xFF00 = ON
@@ -33,17 +36,17 @@ def main():
         time.sleep(1)
 
         # Close left valve (Channel 1) – 0x0000 = OFF
-        #instrument.write_bit(0, 0)
+        instrument.write_bit(0, 0)
         logger.info("Left valve closed")
         time.sleep(1)
 
         # Open right valve (Channel 2, register 0x0001) – 0xFF00 = ON
-        #instrument.write_bit(1, 1)
+        instrument.write_bit(1, 1)
         logger.info("Right valve opened")
         time.sleep(1)
 
         # Close right valve (Channel 2) – 0x0000 = OFF
-        #instrument.write_bit(1, 0)
+        instrument.write_bit(1, 0)
         logger.info("Right valve closed")
         time.sleep(1)
         
@@ -57,14 +60,18 @@ def main():
         #     instrument.write_bit(coil, 0)
         #     logger.info(f"Valve {coil+1} closed")
         #     time.sleep(1)
-        
-        if instrument.serial.is_open:
-            instrument.serial.close()
 
     except Exception as e:
         logger.error("Modbus error during valve cycle", exc_info=e)
     finally:
         logger.info("Valve cycle complete")
+        # Close serial port on exit
+        try:
+            if instrument.serial.is_open:
+                instrument.serial.close()
+                logger.info("Serial port closed")
+        except Exception as e:
+            logger.warning("Failed to close serial port", exc_info=e)
 
 if __name__ == "__main__":
     main()
