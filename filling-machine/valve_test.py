@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 def main():
     # Configure the valve controller instrument
-    instrument = minimalmodbus.Instrument("/dev/ttyCH9344USB0", 1)  # port, slave address
+    instrument = minimalmodbus.Instrument("/dev/ttyCH9344USB8", 1)  # port, slave address
     instrument.mode = minimalmodbus.MODE_RTU
     instrument.serial.baudrate = 9600
     instrument.serial.timeout = 0.5
@@ -31,12 +31,12 @@ def main():
 
     try:
         # Open left valve (Channel 1, register 0x0000) – Write Single Coil (Function 05), 0xFF00 = ON
-        instrument.write_bit(0, 1)
+        instrument.write_register(0x0000, 1)
         logger.info("Left valve opened")
         time.sleep(1)
 
         # Close left valve (Channel 1) – 0x0000 = OFF
-        instrument.write_bit(0, 0)
+        instrument.write_register(0x0000, 0)
         logger.info("Left valve closed")
         time.sleep(1)
 
