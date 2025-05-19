@@ -22,7 +22,7 @@ class UIManager:
         small_font = tkFont.Font(size=14)
         style.configure('Small.TButton', font=small_font, padding=[5,5])
         self.root.title("Filling Machine Control")
-        self.root.attributes('-fullscreen', False)
+        self.root.attributes('-fullscreen', True)
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
 
         # Tabs
