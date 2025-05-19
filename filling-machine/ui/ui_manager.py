@@ -153,9 +153,20 @@ class UIManager:
         adjust_frame = ttk.LabelFrame(settings_tab, text="Flavour Settings")
         adjust_frame.pack(fill="x", padx=10, pady=5)
         self.flavour_vars = {}
-        for flavour in self.controller.config.volumes.keys():
-            f_frame = ttk.Frame(adjust_frame)
-            f_frame.pack(fill="x", pady=2)
+        # Create two columns for flavour settings
+        left_adjust_frame = ttk.Frame(adjust_frame)
+        left_adjust_frame.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
+        right_adjust_frame = ttk.Frame(adjust_frame)
+        right_adjust_frame.grid(row=0, column=1, sticky="nsew", padx=5, pady=5)
+        adjust_frame.columnconfigure(0, weight=1)
+        adjust_frame.columnconfigure(1, weight=1)
+        flavours = list(self.controller.config.volumes.keys())
+        half = (len(flavours) + 1) // 2
+        for idx, flavour in enumerate(flavours):
+            parent = left_adjust_frame if idx < half else right_adjust_frame
+            row = idx if idx < half else idx - half
+            f_frame = ttk.Frame(parent)
+            f_frame.grid(row=row, column=0, sticky="w", pady=2)
             ttk.Label(f_frame, text=flavour).pack(side="left", padx=5)
             var = tk.DoubleVar(value=self.controller.config.get(flavour))
             self.flavour_vars[flavour] = var
@@ -166,7 +177,7 @@ class UIManager:
                        style='Small.TButton', width=2).pack(side="right", padx=2)
         save_btn = ttk.Button(adjust_frame, text="Save Flavours", command=self.save_flavours,
                               style='Large.TButton', width=20)
-        save_btn.pack(pady=5)
+        save_btn.grid(row=1, column=0, columnspan=2, pady=5)
 
         # Kick off update loop
         self.root.after(100, self.update_ui)
