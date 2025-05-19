@@ -23,8 +23,8 @@ def main():
     instrument.serial.parity = serial.PARITY_NONE
     instrument.serial.bytesize = 8
     instrument.serial.stopbits = 1
-    instrument.clear_buffers_before_each_transaction = True
-    instrument.close_port_after_each_call = False
+    #instrument.clear_buffers_before_each_transaction = True
+    #instrument.close_port_after_each_call = False
 
     try:
         # Open left valve (Channel 1, register 0x0000) – Write Single Coil (Function 05), 0xFF00 = ON
