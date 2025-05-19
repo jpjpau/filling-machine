@@ -20,8 +20,8 @@
   "vfd_poll_interval":     0.1,
   "scale_poll_interval":   0.1,
   "valve_poll_interval":   0.1,
-  "vfd_interval":   0.1,
-  "scale_interval": 0.02,
+  "vfd_interval":   0.2,
+  "scale_interval": 0.2,
   "valve_interval": 0.1,
 
   "flavours": {
