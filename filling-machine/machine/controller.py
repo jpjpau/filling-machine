@@ -100,22 +100,28 @@ class MachineController:
     @property
     def current_left_pour(self) -> float:
         """
-        How much has been poured into the left mould so far (clamped to [0, desired_volume]).
+        How much has been poured into the left mould so far.
+        Retained after fill until tray removal.
         """
-        if self._left_tare is None:
-            return 0.0
-        poured = self.actual_weight - self._left_tare
-        return max(0.0, min(self.desired_volume, poured))
+        # During left fill phases, compute live pour
+        if self._left_tare is not None and self._state in (self.STATE_FILL_LEFT_FAST, self.STATE_FILL_LEFT_SLOW):
+            poured = self.actual_weight - self._left_tare
+            return max(0.0, min(self.desired_volume, poured))
+        # Otherwise, use last recorded pour
+        return self._last_left_pour
 
     @property
     def current_right_pour(self) -> float:
         """
-        How much has been poured into the right mould so far (clamped to [0, desired_volume]).
+        How much has been poured into the right mould so far.
+        Retained after fill until tray removal.
         """
-        if self._right_tare is None:
-            return 0.0
-        poured = self.actual_weight - self._right_tare
-        return max(0.0, min(self.desired_volume, poured))
+        # During right fill phases, compute live pour
+        if self._right_tare is not None and self._state in (self.STATE_FILL_RIGHT_FAST, self.STATE_FILL_RIGHT_SLOW):
+            poured = self.actual_weight - self._right_tare
+            return max(0.0, min(self.desired_volume, poured))
+        # Otherwise, use last recorded pour
+        return self._last_right_pour
 
     @property
     def mould_tare_weight(self) -> float:
