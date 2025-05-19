@@ -182,23 +182,24 @@ class MachineController:
 
         logging.info("MachineController: stopped")
 
-    def _modbus_loop(self) -> None:
-        """
-        Apply current VFD/valve state and read the load cell.
-        """
-        while not self.kill_all.is_set():
-            try:
-                self.modbus.set_vfd_state(self.vfd_state)
-                self.modbus.set_vfd_speed(self.vfd_speed)
-                self.modbus.set_valve("left",  "open" if self.valve1 else "close")
-                self.modbus.set_valve("right", "open" if self.valve2 else "close")
-                self.actual_weight = self.modbus.read_load_cell()
-            except NoResponseError as e:
-                # Non‐fatal: instrument didn’t answer this cycle
-                logging.debug(f"Modbus no response (will retry): {e}")
-            except Exception:
-                logging.exception("Error in modbus loop")
-            time.sleep(self._read_interval)
+
+    # def _modbus_loop(self) -> None:
+    #     """
+    #     Apply current VFD/valve state and read the load cell.
+    #     """
+    #     while not self.kill_all.is_set():
+    #         try:
+    #             self.modbus.set_vfd_state(self.vfd_state)
+    #             self.modbus.set_vfd_speed(self.vfd_speed)
+    #             self.modbus.set_valve("left",  "open" if self.valve1 else "close")
+    #             self.modbus.set_valve("right", "open" if self.valve2 else "close")
+    #             self.actual_weight = self.modbus.read_load_cell()
+    #         except NoResponseError as e:
+    #             # Non‐fatal: instrument didn’t answer this cycle
+    #             logging.debug(f"Modbus no response (will retry): {e}")
+    #         except Exception:
+    #             logging.exception("Error in modbus loop")
+    #         time.sleep(self._read_interval)
 
     def _vfd_loop(self) -> None:
         """
@@ -222,6 +223,7 @@ class MachineController:
             try:
                 self.modbus.set_valve("left",  "open" if self.valve1 else "close")
                 self.modbus.set_valve("right", "open" if self.valve2 else "close")
+                print(f"Valve1: {self.valve1}, Valve2: {self.valve2}")
             except NoResponseError as e:
                 logging.debug(f"Valve no response: {e}")
             except Exception:
