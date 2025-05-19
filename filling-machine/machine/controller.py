@@ -164,7 +164,7 @@ class MachineController:
         self.kill_all.set()
         for t in self._threads:
             t.join()
-
+        time.sleep(1)  # allow time for threads to exit
         # Hardware shutdown
         try:
             self.modbus.set_vfd_speed(0)
