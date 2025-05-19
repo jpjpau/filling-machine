@@ -123,35 +123,32 @@ class ModbusInterface:
 
         # Serialize access so no two threads write at once
         with self._valve_lock:
-            # determine the new left/right bit based on valve & action
+            # map valve names to coil indices
+            mapping = {"left": 0, "right": 1}
             if valve == "both":
-                new_left  = 1 if action == "open" else 0
-                new_right = 1 if action == "open" else 0
-            elif valve == "left":
-                new_left  = 1 if action == "open" else 0
-                new_right = self._valve2_state
-            elif valve == "right":
-                new_left  = self._valve1_state
-                new_right = 1 if action == "open" else 0
+                coils = list(mapping.values())
+            elif valve in mapping:
+                coils = [mapping[valve]]
             else:
                 raise ValueError(f"Unknown valve: {valve}")
 
-            # store them
-            self._valve1_state = new_left
-            self._valve2_state = new_right
+            # determine bit value
+            if action == "open":
+                bit = True
+            elif action == "close":
+                bit = False
+            else:
+                raise ValueError(f"Unknown action: {action}")
 
-            # compute combined register value
-            combined = new_left + (new_right << 1)
-            print(f"ModbusInterface: writing valve state {combined:#04x} to register 0x0080")
-
-            # single-register write
-            try:
-                self.valves.write_register(0x0080, combined, 0, functioncode=6)
-            except Exception:
-                logging.exception(f"Valves MODBUS error - {combined}")
-
-            # update timestamp once we've finished
-            self._last_valve_time = time.time()
+            # write each coil separately
+            for coil in coils:
+                try:
+                    # functioncode=5 (Write Single Coil)
+                    self.valves.write_bit(coil, bit)
+                except Exception:
+                    logging.exception(f"Valves MODBUS error on coil {coil} action {action}")
+        # update timestamp once we've finished
+        self._last_valve_time = time.time()
     def poll(self):
         """
         Poll each Modbus device when its configured interval elapses.
