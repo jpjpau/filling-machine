@@ -16,7 +16,7 @@ class UIManager:
         style = ttk.Style(self.root)
         style.theme_use('clam')
         default_font = tkFont.Font(size=20)
-        style.configure('TNotebook.Tab', font=default_font, padding=[20, 20])
+        style.configure('TNotebook.Tab', font=default_font, padding=[24, 16])
         style.configure('Large.TButton', font=default_font, padding=[20, 20])
         # Define a smaller button style for settings controls
         small_font = tkFont.Font(size=14)
@@ -176,7 +176,7 @@ class UIManager:
             ttk.Button(parent, text="+", command=lambda f=flavour: self.adjust_flavour(f, 0.01),
                        style='Small.TButton', width=2).grid(row=row, column=3)
         save_btn = ttk.Button(adjust_frame, text="Save Settings", command=self.save_flavours,
-                              style='Small.TButton', width=10)
+                              style='Small.TButton', width=11)
         save_btn.grid(row=1, column=0, columnspan=2, pady=5)
 
         # Kick off update loop
