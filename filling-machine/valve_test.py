@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 def main():
     # Configure the valve controller instrument
-    instrument = minimalmodbus.Instrument("/dev/ttySC0", 3)  # port, slave address
+    instrument = minimalmodbus.Instrument("/dev/ttyCH9344USB0", 3)  # port, slave address
     instrument.mode = minimalmodbus.MODE_RTU
     instrument.serial.baudrate = 9600
     instrument.serial.timeout = 0.2
