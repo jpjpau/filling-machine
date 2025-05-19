@@ -4,6 +4,10 @@ from machine.mqtt_client      import MqttClient
 from machine.controller       import MachineController
 from ui.ui_manager            import UIManager
 import time
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def main():
     # Kill any process holding the serial ports ttyCH9344USB0 through ttyCH9344USB7
