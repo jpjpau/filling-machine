@@ -23,13 +23,13 @@ def main():
     try:
         # Open left valve (coil 1)
         #instrument.write_register(0x0000, 0xFF00)
-        instrument.write_bit(1, 1)
+        instrument.write_bit(0, 1)
         logger.info("Left valve opened")
-        time.sleep(10)
+        time.sleep(1)
 
         # Close left valve
         #instrument.write_register(0x0000, 0x0000)
-        instrument.write_bit(1, 0)
+        instrument.write_bit(1, 1)
         logger.info("Left valve closed")
         time.sleep(1)
 
