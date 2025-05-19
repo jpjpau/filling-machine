@@ -19,7 +19,7 @@ class UIManager:
         style.configure('TNotebook.Tab', font=default_font, padding=[20, 20])
         style.configure('Large.TButton', font=default_font, padding=[20, 20])
         self.root.title("Filling Machine Control")
-        self.root.attributes('-fullscreen', True)
+        self.root.attributes('-fullscreen', False)
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
 
         # Tabs
