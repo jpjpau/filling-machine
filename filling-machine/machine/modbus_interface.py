@@ -16,7 +16,7 @@ class ModbusInterface:
         self.vfd = minimalmodbus.Instrument("/dev/ttySC1", 2, minimalmodbus.MODE_ASCII)
         #self.vfd.mode    = minimalmodbus.MODE_ASCII
         self.vfd.serial.baudrate = 19200
-        self.vfd.serial.timeout  = 0.05
+        self.vfd.serial.timeout  = 0.5
         self.vfd.serial.parity   = minimalmodbus.serial.PARITY_NONE
         self.vfd.serial.bytesize = 8
         self.vfd.serial.stopbits = 1
@@ -38,7 +38,7 @@ class ModbusInterface:
         self.valves = minimalmodbus.Instrument("/dev/ttySC0", 3)
         self.valves.mode    = minimalmodbus.MODE_RTU
         self.valves.serial.baudrate = 9600
-        self.valves.serial.timeout  = 0.4
+        self.valves.serial.timeout  = 0.2
         self.valves.serial.parity   = minimalmodbus.serial.PARITY_NONE
         self.valves.serial.bytesize = 8
         self.valves.serial.stopbits = 1
@@ -137,12 +137,14 @@ class ModbusInterface:
 
         # Compute combined value: bit0=left, bit1=right
         combined = new_left + (new_right << 1)
+        print(f"ModbusInterface: writing valve state {combined:#04x} to register 0x0080")
 
         # Write combined valve state to single register
-        try:
-            self.valves.write_register(0x0080, combined, 0, functioncode=6)
-        except Exception:
-            logging.exception(f"Valves MODBUS error - {combined}")
+        self.valves.write_register(0x0080, combined, 0, functioncode=6)
+        #try:
+        #    self.valves.write_register(0x0080, combined, 0, functioncode=6)
+        #except Exception:
+        #    logging.exception(f"Valves MODBUS error - {combined}")
         # Update timestamp after successful write
         self._last_valve_time = time.time()
 
