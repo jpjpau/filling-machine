@@ -229,9 +229,21 @@ class UIManager:
         # Update measurements
         self.total_weight_label.config(text=f"Total: {self.controller.actual_weight:.2f} kg")
         self.tare_weight_label.config(text=f"Tare: {self.controller._tare_weight:.2f} kg")
-        # Persist poured amounts until tray removal
-        left_pour = getattr(self.controller, 'last_left_pour', 0.0)
-        right_pour = getattr(self.controller, 'last_right_pour', 0.0)
+
+        # Determine left pour: dynamic during left fill then persist
+        if self.controller._state in (self.controller.STATE_FILL_LEFT_FAST, self.controller.STATE_FILL_LEFT_SLOW):
+            left_pour = self.controller.actual_weight - self.controller._tare_weight
+            self.controller.last_left_pour = left_pour
+        else:
+            left_pour = getattr(self.controller, 'last_left_pour', 0.0)
+
+        # Determine right pour: dynamic during right fill then persist
+        if self.controller._state in (self.controller.STATE_FILL_RIGHT_FAST, self.controller.STATE_FILL_RIGHT_SLOW):
+            right_pour = self.controller.actual_weight - self.controller._tare_weight
+            self.controller.last_right_pour = right_pour
+        else:
+            right_pour = getattr(self.controller, 'last_right_pour', 0.0)
+
         self.left_pour_label.config(text=f"Left Pour: {left_pour:.2f} kg")
         self.right_pour_label.config(text=f"Right Pour: {right_pour:.2f} kg")
         # Schedule next update
