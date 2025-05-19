@@ -56,12 +56,12 @@ class ModbusInterface:
         self._last_valve_time = time.time()
 
         # Ensure both valves are closed at startup
-        try:
-            self.set_valve("both", "close")
-        except minimalmodbus.NoResponseError as e:
-            logging.warning(f"Could not close valves at startup: {e}")
-        except Exception as e:
-            logging.warning(f"Unexpected error closing valves at startup: {e}")
+        # try:
+        #     self.set_valve("both", "close")
+        # except minimalmodbus.NoResponseError as e:
+        #     logging.warning(f"Could not close valves at startup: {e}")
+        # except Exception as e:
+        #     logging.warning(f"Unexpected error closing valves at startup: {e}")
 
         # Track current valve states for combined register writes
         self._valve1_state = 0
