@@ -3,6 +3,7 @@ import serial
 import logging
 import time
 import threading
+from collections import deque
 
 class ModbusInterface:
     """
@@ -56,6 +57,8 @@ class ModbusInterface:
         self._last_vfd_time   = time.time()
         self._last_scale_time = time.time()
         self._last_valve_time = time.time()
+        # history of recent load-cell readings for smoothing
+        self._scale_history = deque(maxlen=5)
         
         # Prevent concurrent access to VFD and valves
         self._vfd_lock = threading.Lock()
@@ -70,6 +73,9 @@ class ModbusInterface:
         self._valve2_state = 0
 
     def read_load_cell(self) -> float:
+        """
+        Read the current load-cell value, smoothed over recent readings.
+        """
         now     = time.time()
         elapsed = now - self._last_scale_time
         if elapsed < self.scale_interval:
@@ -81,9 +87,16 @@ class ModbusInterface:
         if raw > 0x7FFFFFFF:
             raw -= 0x100000000
 
+        # convert raw value to kilograms
+        weight = raw / 1000.0
+        # add to history for smoothing
+        self._scale_history.append(weight)
+        # compute average of recent readings
+        avg_weight = sum(self._scale_history) / len(self._scale_history)
+
         # update timestamp after read
         self._last_scale_time = time.time()
-        return raw / 1000.0
+        return avg_weight
 
     def set_vfd_state(self, state: int):
         """

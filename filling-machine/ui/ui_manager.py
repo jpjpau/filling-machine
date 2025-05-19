@@ -233,4 +233,4 @@ class UIManager:
             right_pour = self.controller.actual_weight - self.controller._tare_weight
         self.right_pour_label.config(text=f"Right Pour: {right_pour:.2f} kg")
         # Schedule next update
-        self.root.after(100, self.update_ui)
+        self.root.after(50, self.update_ui)
