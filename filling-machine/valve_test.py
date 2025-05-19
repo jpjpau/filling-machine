@@ -25,9 +25,9 @@ def main():
     instrument.serial.stopbits = 1
     # Ensure serial buffers are cleared before each transaction if supported
     if hasattr(instrument, 'clear_buffers_before_each_transaction'):
-        instrument.clear_buffers_before_each_transaction = True
+        instrument.clear_buffers_before_each_transaction = False
     # Keep the serial port open for consecutive write_bit calls
-    instrument.close_port_after_each_call = True
+    instrument.close_port_after_each_call = False
 
     # Enable debug logging for minimalmodbus
     instrument.debug = True
