@@ -19,10 +19,10 @@ def main():
     instrument = minimalmodbus.Instrument("/dev/ttyCH9344USB0", 1)  # port, slave address
     instrument.mode = minimalmodbus.MODE_RTU
     instrument.serial.baudrate = 9600
-    instrument.serial.timeout = 0.5
+    instrument.serial.timeout = 1
     instrument.serial.parity = serial.PARITY_NONE
     instrument.serial.bytesize = 8
-    instrument.serial.stopbits = 0
+    instrument.serial.stopbits = 1
     # Ensure serial buffers are cleared before each transaction if supported
     if hasattr(instrument, 'clear_buffers_before_each_transaction'):
         instrument.clear_buffers_before_each_transaction = True
@@ -47,17 +47,17 @@ def main():
         # Open left valve (Channel 1, register 0x0000) – Write Single Coil (Function 05), 0xFF00 = ON
         instrument.write_bit(0x0000, 1)
         logger.info("Left valve opened")
-        time.sleep(1)
+        time.sleep(2)
 
         # Close left valve (Channel 1) – 0x0000 = OFF
         instrument.write_bit(0x0000, 0)
         logger.info("Left valve closed")
-        time.sleep(1)
+        time.sleep(2)
 
         # Open right valve (Channel 2, register 0x0001) – 0xFF00 = ON
         instrument.write_bit(1, 1)
         logger.info("Right valve opened")
-        time.sleep(1)
+        time.sleep(2)
 
         # Close right valve (Channel 2) – 0x0000 = OFF
         instrument.write_bit(1, 0)
