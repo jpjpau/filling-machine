@@ -14,7 +14,7 @@ class ModbusInterface:
 
     def __init__(self, config):
         # VFD (turny_boi)
-        self.vfd = minimalmodbus.Instrument("/dev/ttyCH9344USB0", 2, minimalmodbus.MODE_ASCII)
+        self.vfd = minimalmodbus.Instrument("/dev/ttyCH9344USB2", 2, minimalmodbus.MODE_ASCII)
         #self.vfd.mode    = minimalmodbus.MODE_ASCII
         self.vfd.serial.baudrate = 19200
         self.vfd.serial.timeout  = 0.4
@@ -37,7 +37,7 @@ class ModbusInterface:
         self.scale.close_port_after_each_call            = False
 
         # Valve controller
-        self.valves = minimalmodbus.Instrument("/dev/ttyCH9344USB0", 3)
+        self.valves = minimalmodbus.Instrument("/dev/ttyCH9344USB0", 1)
         self.valves.mode    = minimalmodbus.MODE_RTU
         self.valves.serial.baudrate = 9600
         self.valves.serial.timeout  = 0.2
