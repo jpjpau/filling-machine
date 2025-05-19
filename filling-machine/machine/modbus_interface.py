@@ -60,34 +60,28 @@ class ModbusInterface:
         self._vfd_lock = threading.Lock()
         self._valve_lock = threading.Lock()
 
-        # Ensure both valves are closed at startup
-        # try:
-        #     self.set_valve("both", "close")
-        # except minimalmodbus.NoResponseError as e:
-        #     logging.warning(f"Could not close valves at startup: {e}")
-        # except Exception as e:
-        #     logging.warning(f"Unexpected error closing valves at startup: {e}")
-
-        # Track current valve states for combined register writes
-
         # Lock to serialize valve register writes
         self._valve_lock   = threading.Lock()
+        # Lock to serialize scale reads
+        self._scale_lock = threading.Lock()
         # Track current valve states for combined register writes
         self._valve1_state = 0
         self._valve2_state = 0
 
     def read_load_cell(self) -> float:
-        now = time.time()
+        now     = time.time()
         elapsed = now - self._last_scale_time
         if elapsed < self.scale_interval:
             time.sleep(self.scale_interval - elapsed)
-        self._last_scale_time = time.time()
-        """
-        Read a 32-bit signed value from the load cell and return kilograms.
-        """
-        raw = self.scale.read_long(0x0000, 3, False, 0)
+
+        # serialize access to the scale
+        with self._scale_lock:
+            raw = self.scale.read_long(0x0000, 3, False, 0)
         if raw > 0x7FFFFFFF:
             raw -= 0x100000000
+
+        # update timestamp after read
+        self._last_scale_time = time.time()
         return raw / 1000.0
 
     def set_vfd_state(self, state: int):
