@@ -10,7 +10,7 @@
   "confirm_removals": 3,
   "fast_speed": 10.0,
   "slow_speed": 3.0,
-  "clean_speed": 10.0,
+  "clean_speed": 5.0,
   "clean_initial_delay": 1.0,
   "clean_interval": 10.0,
   "clean_toggle_delay": 1.0,
