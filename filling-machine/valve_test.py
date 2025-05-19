@@ -27,7 +27,21 @@ def main():
     if hasattr(instrument, 'clear_buffers_before_each_transaction'):
         instrument.clear_buffers_before_each_transaction = True
     # Keep the serial port open for consecutive write_bit calls
-    instrument.close_port_after_each_call = False
+    instrument.close_port_after_each_call = True
+
+    # Enable debug logging for minimalmodbus
+    instrument.debug = True
+    mm_logger = logging.getLogger("minimalmodbus")
+    mm_logger.setLevel(logging.DEBUG)
+    mm_logger.addHandler(logging.StreamHandler())
+
+    # Monkey-patch to log raw TX bytes in hex
+    _orig_communicate = instrument._communicate
+    def _logging_communicate(request_bytes, number_of_bytes_to_read):
+        hex_str = ' '.join(f"{b:02X}" for b in request_bytes)
+        logger.info(f"MinimalModbus TX: {hex_str}")
+        return _orig_communicate(request_bytes, number_of_bytes_to_read)
+    instrument._communicate = _logging_communicate
 
     try:
         # Open left valve (Channel 1, register 0x0000) – Write Single Coil (Function 05), 0xFF00 = ON
