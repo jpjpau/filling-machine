@@ -24,6 +24,7 @@ class ModbusInterface:
         self.vfd.clear_buffers_before_each_transaction = True
         self.vfd.close_port_after_each_call            = False
 
+
         # Load cell
         self.scale = minimalmodbus.Instrument("/dev/ttyCH9344USB1", 1)
         self.scale.mode    = minimalmodbus.MODE_RTU
