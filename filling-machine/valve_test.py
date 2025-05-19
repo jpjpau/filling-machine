@@ -65,15 +65,15 @@ def main():
         # time.sleep(1)
         
         #Cycle through 4 valves (channels 1-4)
-        for coil in range(4):
+        for coil in range(8):
             # Open valve (Function 05, 0xFF00)
             instrument.write_bit(coil, 1)
             logger.info(f"Valve {coil+1} opened")
-            time.sleep(0.5)
+            time.sleep(0.2)
             # Close valve (0x0000)
             instrument.write_bit(coil, 0)
             logger.info(f"Valve {coil+1} closed")
-            time.sleep(1)
+            time.sleep(0.2)
 
     except Exception as e:
         logger.error("Modbus error during valve cycle", exc_info=e)
