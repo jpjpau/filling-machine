@@ -35,6 +35,7 @@ def main():
 
         # Open right valve (coil 2)
         #instrument.write_register(0x0001, 0xFF00)
+        instrument.write_bit(2, 1)
         logger.info("Right valve opened")
         time.sleep(1)
 
