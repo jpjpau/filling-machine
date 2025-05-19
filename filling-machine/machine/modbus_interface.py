@@ -2,6 +2,7 @@ import minimalmodbus
 import serial
 import logging
 import time
+import threading
 
 class ModbusInterface:
     """
@@ -54,6 +55,10 @@ class ModbusInterface:
         self._last_vfd_time   = time.time()
         self._last_scale_time = time.time()
         self._last_valve_time = time.time()
+        
+        # Prevent concurrent access to VFD and valves
+        self._vfd_lock = threading.Lock()
+        self._valve_lock = threading.Lock()
 
         # Ensure both valves are closed at startup
         # try:
@@ -63,6 +68,10 @@ class ModbusInterface:
         # except Exception as e:
         #     logging.warning(f"Unexpected error closing valves at startup: {e}")
 
+        # Track current valve states for combined register writes
+
+        # Lock to serialize valve register writes
+        self._valve_lock   = threading.Lock()
         # Track current valve states for combined register writes
         self._valve1_state = 0
         self._valve2_state = 0
@@ -89,10 +98,11 @@ class ModbusInterface:
         elapsed = now - self._last_vfd_time
         if elapsed < self.vfd_interval:
             time.sleep(self.vfd_interval - elapsed)
-        logging.info(f"ModbusInterface: sending VFD control command {state} to register 0x2000")
-        # functioncode=6 (Write Single Register), decimals=0
-        self.vfd.write_register(0x2000, state, 0, functioncode=6) 
-        self._last_vfd_time = time.time()
+
+        with self._vfd_lock:
+            logging.info(f"ModbusInterface: sending VFD control command {state} to register 0x2000")
+            self.vfd.write_register(0x2000, state, 0, functioncode=6)
+            self._last_vfd_time = time.time()
 
     def set_vfd_speed(self, speed: int):
         """
@@ -103,51 +113,50 @@ class ModbusInterface:
         elapsed = now - self._last_vfd_time
         if elapsed < self.vfd_interval:
             time.sleep(self.vfd_interval - elapsed)
-        logging.info(f"ModbusInterface: setting VFD speed reference to {speed} (×100) at register 0x2001")
-        # speed is already scaled: Hz × 100
-        self.vfd.write_register(0x2001, speed, 0, functioncode=6)
-        self._last_vfd_time = time.time()
+
+        with self._vfd_lock:
+            logging.info(f"ModbusInterface: setting VFD speed reference to {speed} (×100) at register 0x2001")
+            self.vfd.write_register(0x2001, speed, 0, functioncode=6)
+            self._last_vfd_time = time.time()
 
     def set_valve(self, valve: str, action: str):
-        now = time.time()
+        # Enforce minimum interval between writes
+        now     = time.time()
         elapsed = now - self._last_valve_time
         if elapsed < self.valve_interval:
             time.sleep(self.valve_interval - elapsed)
-        """
-        Control valves by aggregating into a single register write.
-          valve: "left", "right", or "both"
-          action: "open" or "close"
-        """
-        # Determine new individual valve states
-        if valve == "both":
-            new_left  = 1 if action == "open" else 0
-            new_right = 1 if action == "open" else 0
-        elif valve == "left":
-            new_left  = 1 if action == "open" else 0
-            new_right = self._valve2_state
-        elif valve == "right":
-            new_left  = self._valve1_state
-            new_right = 1 if action == "open" else 0
-        else:
-            raise ValueError(f"Unknown valve: {valve}")
 
-        # Update stored states
-        self._valve1_state = new_left
-        self._valve2_state = new_right
+        # Serialize access so no two threads write at once
+        with self._valve_lock:
+            # determine the new left/right bit based on valve & action
+            if valve == "both":
+                new_left  = 1 if action == "open" else 0
+                new_right = 1 if action == "open" else 0
+            elif valve == "left":
+                new_left  = 1 if action == "open" else 0
+                new_right = self._valve2_state
+            elif valve == "right":
+                new_left  = self._valve1_state
+                new_right = 1 if action == "open" else 0
+            else:
+                raise ValueError(f"Unknown valve: {valve}")
 
-        # Compute combined value: bit0=left, bit1=right
-        combined = new_left + (new_right << 1)
-        print(f"ModbusInterface: writing valve state {combined:#04x} to register 0x0080")
+            # store them
+            self._valve1_state = new_left
+            self._valve2_state = new_right
 
-        # Write combined valve state to single register
-        self.valves.write_register(0x0080, combined, 0, functioncode=6)
-        #try:
-        #    self.valves.write_register(0x0080, combined, 0, functioncode=6)
-        #except Exception:
-        #    logging.exception(f"Valves MODBUS error - {combined}")
-        # Update timestamp after successful write
-        self._last_valve_time = time.time()
+            # compute combined register value
+            combined = new_left + (new_right << 1)
+            print(f"ModbusInterface: writing valve state {combined:#04x} to register 0x0080")
 
+            # single-register write
+            try:
+                self.valves.write_register(0x0080, combined, 0, functioncode=6)
+            except Exception:
+                logging.exception(f"Valves MODBUS error - {combined}")
+
+            # update timestamp once we've finished
+            self._last_valve_time = time.time()
     def poll(self):
         """
         Poll each Modbus device when its configured interval elapses.
