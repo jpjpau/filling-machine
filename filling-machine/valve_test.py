@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 def main():
     # Configure the valve controller instrument
-    instrument = minimalmodbus.Instrument("/dev/ttyCH9344USB0", 3)  # port, slave address
+    instrument = minimalmodbus.Instrument("/dev/ttyCH9344USB0", 1)  # port, slave address
     instrument.mode = minimalmodbus.MODE_RTU
     instrument.serial.baudrate = 9600
     instrument.serial.timeout = 0.5
@@ -21,23 +21,23 @@ def main():
     instrument.close_port_after_each_call = True
 
     try:
-        # Open left valve (coil 0)
-        instrument.write_bit(0, 1)
+        # Open left valve (coil 1)
+        instrument.write_bit(1, 1)
         logger.info("Left valve opened")
         time.sleep(1)
 
         # Close left valve
-        instrument.write_bit(0, 0)
+        instrument.write_bit(1, 0)
         logger.info("Left valve closed")
         time.sleep(1)
 
-        # Open right valve (coil 1)
-        instrument.write_bit(1, 1)
+        # Open right valve (coil 2)
+        instrument.write_bit(2, 1)
         logger.info("Right valve opened")
         time.sleep(1)
 
         # Close right valve
-        instrument.write_bit(1, 0)
+        instrument.write_bit(2, 0)
         logger.info("Right valve closed")
 
     except Exception as e:
