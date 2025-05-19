@@ -161,17 +161,24 @@ class ModbusInterface:
         result = {}
         # Scale (load cell)
         if now - self._last_scale_time >= self.scale_interval:
-            result['scale'] = self.read_load_cell()
-            self._last_scale_time = now
-        # VFD status register (0x2002)
+            try:
+                result['scale'] = self.read_load_cell()
+                self._last_scale_time = now
+            except Exception:
+                logging.exception("Error polling scale")        # VFD status register (0x2002)
         if now - self._last_vfd_time >= self.vfd_interval:
-            result['vfd'] = self.vfd.read_register(0x2002, 0, functioncode=3)
-            self._last_vfd_time = now
-        # Valve coils
+            try:
+                result['vfd'] = self.vfd.read_register(0x2002, 0, functioncode=3)
+                self._last_vfd_time = now
+            except Exception:
+                logging.exception("Error polling VFD")        # Valve coils
         if now - self._last_valve_time >= self.valve_interval:
-            result['valves'] = {
-                'left':  self.valves.read_bit(0, functioncode=1),
-                'right': self.valves.read_bit(1, functioncode=1)
-            }
-            self._last_valve_time = now
-        return result
+            try:
+                result['valves'] = {
+                    'left':  self.valves.read_bit(0, functioncode=1),
+                    'right': self.valves.read_bit(1, functioncode=1)
+                }
+                self._last_valve_time = now
+            except Exception:
+                logging.exception("Error polling valves")
+                return result
