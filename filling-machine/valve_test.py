@@ -64,7 +64,7 @@ def main():
         logger.info("Right valve closed")
         #time.sleep(1)
         
-        Cycle through 4 valves (channels 1-4)
+        #Cycle through 4 valves (channels 1-4)
         for coil in range(4):
             # Open valve (Function 05, 0xFF00)
             instrument.write_bit(coil, 1)
