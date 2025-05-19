@@ -17,10 +17,10 @@
   "clean_stop_delay": 5.0,
   "vfd_run_command": 2,
   "vfd_stop_command": 1,
-  "vfd_poll_interval":     0.5,
+  "vfd_poll_interval":     0.1,
   "scale_poll_interval":   0.1,
   "valve_poll_interval":   0.4,
-  "vfd_interval":   0.5,
+  "vfd_interval":   0.1,
   "scale_interval": 0.1,
   "valve_interval": 0.4,
 

@@ -17,7 +17,7 @@ class ModbusInterface:
         self.vfd = minimalmodbus.Instrument("/dev/ttyCH9344USB2", 2, minimalmodbus.MODE_ASCII)
         #self.vfd.mode    = minimalmodbus.MODE_ASCII
         self.vfd.serial.baudrate = 19200
-        self.vfd.serial.timeout  = 0.4
+        self.vfd.serial.timeout  = 0.05
         self.vfd.serial.parity   = minimalmodbus.serial.PARITY_NONE
         self.vfd.serial.bytesize = 8
         self.vfd.serial.stopbits = 1
