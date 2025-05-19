@@ -18,6 +18,9 @@ class UIManager:
         default_font = tkFont.Font(size=20)
         style.configure('TNotebook.Tab', font=default_font, padding=[20, 20])
         style.configure('Large.TButton', font=default_font, padding=[20, 20])
+        # Define a smaller button style for settings controls
+        small_font = tkFont.Font(size=14)
+        style.configure('Small.TButton', font=small_font, padding=[5,5])
         self.root.title("Filling Machine Control")
         self.root.attributes('-fullscreen', False)
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
@@ -158,9 +161,9 @@ class UIManager:
             self.flavour_vars[flavour] = var
             ttk.Label(f_frame, textvariable=var, width=6).pack(side="right", padx=5)
             ttk.Button(f_frame, text="+", command=lambda f=flavour: self.adjust_flavour(f, 0.01),
-                       style='Large.TButton', width=4).pack(side="right")
+                       style='Small.TButton', width=2).pack(side="right")
             ttk.Button(f_frame, text="−", command=lambda f=flavour: self.adjust_flavour(f, -0.01),
-                       style='Large.TButton', width=4).pack(side="right", padx=2)
+                       style='Small.TButton', width=2).pack(side="right", padx=2)
         save_btn = ttk.Button(adjust_frame, text="Save Flavours", command=self.save_flavours,
                               style='Large.TButton', width=20)
         save_btn.pack(pady=5)
