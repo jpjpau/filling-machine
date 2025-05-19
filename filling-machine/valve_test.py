@@ -23,8 +23,8 @@ def main():
     instrument.serial.parity = serial.PARITY_NONE
     instrument.serial.bytesize = 8
     instrument.serial.stopbits = 1
-    #instrument.clear_buffers_before_each_transaction = True
-    #instrument.close_port_after_each_call = False
+    instrument.clear_buffers_before_each_transaction = True
+    instrument.close_port_after_each_call = True
 
     try:
         # Open left valve (Channel 1, register 0x0000) – Write Single Coil (Function 05), 0xFF00 = ON
@@ -33,30 +33,30 @@ def main():
         time.sleep(1)
 
         # Close left valve (Channel 1) – 0x0000 = OFF
-        instrument.write_bit(0, 0)
+        #instrument.write_bit(0, 0)
         logger.info("Left valve closed")
         time.sleep(1)
 
         # Open right valve (Channel 2, register 0x0001) – 0xFF00 = ON
-        instrument.write_bit(1, 1)
+        #instrument.write_bit(1, 1)
         logger.info("Right valve opened")
         time.sleep(1)
 
         # Close right valve (Channel 2) – 0x0000 = OFF
-        instrument.write_bit(1, 0)
+        #instrument.write_bit(1, 0)
         logger.info("Right valve closed")
         time.sleep(1)
         
         # Cycle through 4 valves (channels 1-4)
-        for coil in range(4):
-            # Open valve (Function 05, 0xFF00)
-            instrument.write_bit(coil, 1)
-            logger.info(f"Valve {coil+1} opened")
-            time.sleep(1)
-            # Close valve (0x0000)
-            instrument.write_bit(coil, 0)
-            logger.info(f"Valve {coil+1} closed")
-            time.sleep(1)
+        # for coil in range(4):
+        #     # Open valve (Function 05, 0xFF00)
+        #     instrument.write_bit(coil, 1)
+        #     logger.info(f"Valve {coil+1} opened")
+        #     time.sleep(1)
+        #     # Close valve (0x0000)
+        #     instrument.write_bit(coil, 0)
+        #     logger.info(f"Valve {coil+1} closed")
+        #     time.sleep(1)
         
         if instrument.serial.is_open:
             instrument.serial.close()
