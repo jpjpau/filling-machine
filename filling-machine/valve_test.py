@@ -19,7 +19,7 @@ def main():
     instrument = minimalmodbus.Instrument("/dev/ttyCH9344USB0", 1)  # port, slave address
     instrument.mode = minimalmodbus.MODE_RTU
     instrument.serial.baudrate = 9600
-    instrument.serial.timeout = 1
+    instrument.serial.timeout = 0.1
     instrument.serial.parity = serial.PARITY_NONE
     instrument.serial.bytesize = 8
     instrument.serial.stopbits = 1
