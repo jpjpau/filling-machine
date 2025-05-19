@@ -45,12 +45,12 @@ def main():
 
     try:
         # Open left valve (Channel 1, register 0x0000) – Write Single Coil (Function 05), 0xFF00 = ON
-        instrument.write_register(0x0000, 1)
+        instrument.write_bit(0x0000, 1)
         logger.info("Left valve opened")
         time.sleep(1)
 
         # Close left valve (Channel 1) – 0x0000 = OFF
-        instrument.write_register(0x0000, 0)
+        instrument.write_bit(0x0000, 0)
         logger.info("Left valve closed")
         time.sleep(1)
 
