@@ -287,7 +287,7 @@ class MachineController:
         """
         cfg = self.config
         # initial left-open and VFD start
-        self.modbus.set_valve("left", "open")
+        self.valve1 = True
         time.sleep(cfg.get("clean_initial_delay"))
         self.vfd_state = self.vfd_run_cmd
         self.vfd_speed = int(cfg.get("clean_speed") * 100)
@@ -300,13 +300,13 @@ class MachineController:
         while not self._clean_stop.is_set():
             time.sleep(interval)
             if left_open:
-                self.modbus.set_valve("right", "open")
+                self.valve2 = True
                 time.sleep(toggle_delay)
-                self.modbus.set_valve("left", "close")
+                self.valve1 = False
             else:
-                self.modbus.set_valve("left", "open")
+                self.valve1 = True
                 time.sleep(toggle_delay)
-                self.modbus.set_valve("right", "close")
+                self.valve2 = False
             left_open = not left_open
 
         logging.info("Exiting clean loop")
