@@ -2,7 +2,7 @@
   "mqttBroker": "192.168.15.6",
   "loadcell_interval": 0.5,
   "valve_start_delay": 0.5,
-  "post_fill_delay": 0.5,
+  "post_fill_delay": 0.2,
   "mould_tolerance": 0.20,
   "fill_tolerance": 0.50,
   "removal_tolerance": 0.02,

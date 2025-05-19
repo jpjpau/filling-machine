@@ -84,6 +84,9 @@ class MachineController:
         self._left_tare = None
         self._right_tare = None
         self._mould_tare = None  # the weight when tray + moulds first detected
+        # Pour retention
+        self._last_left_pour = 0.0
+        self._last_right_pour = 0.0
 
     def select_flavour(self, name: str) -> None:
         """
@@ -342,6 +345,9 @@ class MachineController:
                 # 3) Slow-fill left until target reached
                 elif self._state == self.STATE_FILL_LEFT_SLOW:
                     if (w - self._tare_weight) >= self.desired_volume:
+                        # Record final left pour amount
+                        poured_left = self.actual_weight - self._left_tare
+                        self._last_left_pour = max(0.0, min(self.desired_volume, poured_left))
                         self.vfd_speed = 0
                         self.vfd_state = self.vfd_stop_cmd
                         time.sleep(self._post_fill_delay)
@@ -369,6 +375,9 @@ class MachineController:
                 # 6) Slow-fill right until done
                 elif self._state == self.STATE_FILL_RIGHT_SLOW:
                     if (w - self._tare_weight) >= self.desired_volume:
+                        # Record final right pour amount
+                        poured_right = self.actual_weight - self._right_tare
+                        self._last_right_pour = max(0.0, min(self.desired_volume, poured_right))
                         self.vfd_speed = 0
                         self.vfd_state = self.vfd_stop_cmd
                         time.sleep(self._post_fill_delay)
@@ -381,6 +390,12 @@ class MachineController:
                     if w <= self._removal_tol:
                         self._consec_count += 1
                         if self._consec_count >= self._confirm_removals:
+                            # Clear retained pour and tare data
+                            self._last_left_pour  = 0.0
+                            self._last_right_pour = 0.0
+                            self._left_tare       = None
+                            self._right_tare      = None
+                            self._mould_tare      = None
                             # Re-tare for next cycle
                             self._tare_weight = w
                             self._state       = self.STATE_WAITING_FOR_MOULD

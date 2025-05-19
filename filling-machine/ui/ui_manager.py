@@ -56,16 +56,6 @@ class UIManager:
         )
         self.flavour_menu.pack(fill="x", padx=5)
 
-        # Weight display
-        weight_frame = ttk.LabelFrame(fill_tab, text="Weight (kg)")
-        weight_frame.pack(fill="x", padx=10, pady=5)
-        self.weight_label = ttk.Label(
-            weight_frame,
-            text=f"{self.controller.actual_weight:.2f}",
-            font=(None, 16)
-        )
-        self.weight_label.pack(padx=5, pady=5)
-
         # --- Measurements ---
         meas_frame = ttk.LabelFrame(fill_tab, text="Measurements")
         meas_frame.pack(fill="x", padx=10, pady=5)
@@ -233,22 +223,16 @@ class UIManager:
 
     def update_ui(self):
         # Refresh dynamic labels
-        self.weight_label.config(text=f"{self.controller.actual_weight:.2f}")
         self.status_label.config(text=self.controller._state)
         self.fast_speed_label.config(text=f"{self.controller.speed_fast:.2f} Hz")
         self.slow_speed_label.config(text=f"{self.controller.speed_slow:.2f} Hz")
         # Update measurements
         self.total_weight_label.config(text=f"Total: {self.controller.actual_weight:.2f} kg")
         self.tare_weight_label.config(text=f"Tare: {self.controller._tare_weight:.2f} kg")
-        # Compute left pour only during left fill states
-        left_pour = 0.0
-        if self.controller._state in (self.controller.STATE_FILL_LEFT_FAST, self.controller.STATE_FILL_LEFT_SLOW):
-            left_pour = self.controller.actual_weight - self.controller._tare_weight
+        # Persist poured amounts until tray removal
+        left_pour = getattr(self.controller, 'last_left_pour', 0.0)
+        right_pour = getattr(self.controller, 'last_right_pour', 0.0)
         self.left_pour_label.config(text=f"Left Pour: {left_pour:.2f} kg")
-        # Compute right pour only during right fill states
-        right_pour = 0.0
-        if self.controller._state in (self.controller.STATE_FILL_RIGHT_FAST, self.controller.STATE_FILL_RIGHT_SLOW):
-            right_pour = self.controller.actual_weight - self.controller._tare_weight
         self.right_pour_label.config(text=f"Right Pour: {right_pour:.2f} kg")
         # Schedule next update
         self.root.after(50, self.update_ui)
