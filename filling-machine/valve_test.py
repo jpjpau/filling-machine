@@ -4,6 +4,11 @@ import serial
 import time
 import logging
 
+# WAVESHARE Modbus RTU 8-ch Relay V3 – Channel mapping:
+#  Relay 1 → coil address 0x0000 (instrument.write_bit(0,...))
+#  Relay 2 → coil address 0x0001 (instrument.write_bit(1,...))
+#  Use Function Code 05 (Write Single Coil): 0xFF00 = ON, 0x0000 = OFF
+
 # Optional: enable debug logging from minimalmodbus
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -21,28 +26,36 @@ def main():
     instrument.close_port_after_each_call = False
 
     try:
-        # Open left valve (coil 1)
-        #instrument.write_register(0x0000, 0xFF00)
+        # Open left valve (Channel 1, register 0x0000) – Write Single Coil (Function 05), 0xFF00 = ON
         instrument.write_bit(0, 1)
         logger.info("Left valve opened")
         time.sleep(1)
 
-        # Close left valve
-        #instrument.write_register(0x0000, 0x0000)
+        # Close left valve (Channel 1) – 0x0000 = OFF
         instrument.write_bit(0, 0)
-        instrument.write_bit(1, 1)
         logger.info("Left valve closed")
         time.sleep(1)
 
-        # Open right valve (coil 2)
-        #instrument.write_register(0x0001, 0xFF00)
-        #instrument.write_bit(2, 1)
+        # Open right valve (Channel 2, register 0x0001) – 0xFF00 = ON
+        instrument.write_bit(1, 1)
         logger.info("Right valve opened")
         time.sleep(1)
 
-        # Close right valve
-        #instrument.write_register(0x0001, 0x0000)
+        # Close right valve (Channel 2) – 0x0000 = OFF
+        instrument.write_bit(1, 0)
         logger.info("Right valve closed")
+        time.sleep(1)
+        
+        # Cycle through 4 valves (channels 1-4)
+        for coil in range(4):
+            # Open valve (Function 05, 0xFF00)
+            instrument.write_bit(coil, 1)
+            logger.info(f"Valve {coil+1} opened")
+            time.sleep(1)
+            # Close valve (0x0000)
+            instrument.write_bit(coil, 0)
+            logger.info(f"Valve {coil+1} closed")
+            time.sleep(1)
         
         if instrument.serial.is_open:
             instrument.serial.close()
