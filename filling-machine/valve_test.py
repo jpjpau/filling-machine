@@ -20,7 +20,7 @@ def main():
     instrument.mode = minimalmodbus.MODE_RTU
     instrument.serial.baudrate = 9600
     instrument.serial.timeout = 0.5
-    instrument.serial.parity = serial.PARITY_NONE
+    instrument.serial.parity = serial.PARITY_EVEN
     instrument.serial.bytesize = 8
     instrument.serial.stopbits = 1
     # Ensure serial buffers are cleared before each transaction if supported
