@@ -6,6 +6,14 @@ from ui.ui_manager            import UIManager
 import time
 
 def main():
+    # Kill any process holding the serial ports ttyCH9344USB0 through ttyCH9344USB7
+    for i in range(8):
+        dev = f"/dev/ttyCH9344USB{i}"
+        try:
+            subprocess.run(["fuser", "-k", dev], check=True)
+            logger.info(f"Killed processes using {dev}")
+        except Exception as e:
+            logger.warning(f"Failed to kill processes using {dev}: {e}")
     # 1. Load configuration
     cfg = Config()
 
