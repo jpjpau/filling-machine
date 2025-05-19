@@ -21,7 +21,7 @@ class ModbusInterface:
         self.vfd.serial.bytesize = 8
         self.vfd.serial.stopbits = 1
         self.vfd.clear_buffers_before_each_transaction = True
-        self.vfd.close_port_after_each_call            = True
+        self.vfd.close_port_after_each_call            = False
 
         # Load cell
         self.scale = minimalmodbus.Instrument("/dev/ttySC0", 1)
@@ -32,7 +32,7 @@ class ModbusInterface:
         self.scale.serial.bytesize = 8
         self.scale.serial.stopbits = 1
         self.scale.clear_buffers_before_each_transaction = True
-        self.scale.close_port_after_each_call            = True
+        self.scale.close_port_after_each_call            = False
 
         # Valve controller
         self.valves = minimalmodbus.Instrument("/dev/ttySC0", 3)
@@ -43,7 +43,7 @@ class ModbusInterface:
         self.valves.serial.bytesize = 8
         self.valves.serial.stopbits = 1
         self.valves.clear_buffers_before_each_transaction = True
-        self.valves.close_port_after_each_call            = True
+        self.valves.close_port_after_each_call            = False
 
         # Poll intervals (seconds) for each device
         self.vfd_interval   = config.get("vfd_poll_interval")
