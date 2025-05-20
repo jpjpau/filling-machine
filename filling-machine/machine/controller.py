@@ -168,10 +168,12 @@ class MachineController:
         self.vfd_speed = 0
         # Schedule valves closure after clean_stop_delay
         delay = self.config.get("clean_stop_delay")
-        threading.Timer(delay, lambda: (
-            self.modbus.set_valve("both", "close"),
+        def close_valves():
+            self.valve1 = False
+            self.valve2 = False
             logging.info("Cleaning cycle stopped: valves closed")
-        )).start()
+        threading.Timer(delay, close_valves).start()
+
         logging.info("Cleaning cycle stop initiated")
 
 
@@ -355,15 +357,23 @@ class MachineController:
                 elif self._state == self.STATE_FILL_LEFT_SLOW:
                     self.vfd_speed = int(self.speed_slow * 100)
                     if (w - self._tare_weight) >= self.desired_volume:
-                        # Record final left pour amount
-                        poured_left = self.actual_weight - self._left_tare
-                        self._last_left_pour = max(0.0, min(self.desired_volume, poured_left))
+                        # Stop VFD and close left valve immediately
                         self.vfd_speed = 0
                         self.vfd_state = self.vfd_stop_cmd
-                        time.sleep(self._post_fill_delay)
                         self.valve1 = False
-                        #time.sleep(self._post_fill_delay)
-                        # Prepare right fill
+
+                        # Allow scale readings to settle and average a few samples
+                        sample_count = 5
+                        readings = []
+                        for _ in range(sample_count):
+                            time.sleep(self._scale_interval)
+                            readings.append(self.actual_weight - self._left_tare)
+                        avg_pour = sum(readings) / len(readings)
+                        # Record the raw averaged pour amount (allowing overshoot to be visible)
+                        self._last_left_pour = avg_pour
+
+                        # Post-fill delay before moving to next stage
+                        time.sleep(self._post_fill_delay)
                         self._state = self.STATE_PREP_RIGHT
 
                 # 4) Prep right: open valve, start fast fill
