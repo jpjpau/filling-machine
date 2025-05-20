@@ -5,6 +5,7 @@ from machine.controller       import MachineController
 from ui.ui_manager            import UIManager
 import time
 import logging
+import subprocess
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -37,6 +38,7 @@ def main():
     finally:
         # Ensure we always cleanly shut down the hardware threads
         controller.stop()
+        logger.info("Application exited cleanly")
 
 if __name__ == "__main__":
     main()

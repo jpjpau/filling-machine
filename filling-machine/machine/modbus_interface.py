@@ -4,6 +4,7 @@ import logging
 import time
 import threading
 from collections import deque
+import glob
 
 class ModbusInterface:
     """
@@ -14,8 +15,35 @@ class ModbusInterface:
     """
 
     def __init__(self, config):
+        def find_port_for_slave(slave_id: int, ascii_mode: bool = False) -> str:
+            """
+            Scan /dev for ttyCH9344USB* devices and attempt a minimal read
+            to discover which port responds for the given slave.
+            """
+            ports = sorted(glob.glob("/dev/ttyCH9344USB*"))
+            for port in ports:
+                try:
+                    mode = minimalmodbus.MODE_ASCII if ascii_mode else minimalmodbus.MODE_RTU
+                    inst = minimalmodbus.Instrument(port, slave_id, mode)
+                    inst.serial.timeout = 0.1
+                    # Try a simple read to validate presence
+                    if ascii_mode:
+                        inst.read_register(0x2002, 0, functioncode=3)
+                    else:
+                        if slave_id == 1:
+                            inst.read_long(0x0000, 3, False, 0)
+                        elif slave_id == 3:
+                            inst.read_bit(0, functioncode=1)
+                        else:
+                            inst.read_register(0x2002, 0, functioncode=3)
+                    return port
+                except Exception:
+                    continue
+            raise RuntimeError(f"No responsive port found for slave ID {slave_id}")
+
         # VFD (turny_boi)
-        self.vfd = minimalmodbus.Instrument("/dev/ttyCH9344USB10", 2, minimalmodbus.MODE_ASCII)
+        vfd_port = find_port_for_slave(2, ascii_mode=True)
+        self.vfd = minimalmodbus.Instrument(vfd_port, 2, minimalmodbus.MODE_ASCII)
         #self.vfd.mode    = minimalmodbus.MODE_ASCII
         self.vfd.serial.baudrate = 19200
         self.vfd.serial.timeout  = 0.05
@@ -27,7 +55,8 @@ class ModbusInterface:
 
 
         # Load cell
-        self.scale = minimalmodbus.Instrument("/dev/ttyCH9344USB9", 1)
+        scale_port = find_port_for_slave(1)
+        self.scale = minimalmodbus.Instrument(scale_port, 1)
         self.scale.mode    = minimalmodbus.MODE_RTU
         self.scale.serial.baudrate = 9600
         self.scale.serial.timeout  = 0.05
@@ -38,7 +67,8 @@ class ModbusInterface:
         self.scale.close_port_after_each_call            = False
 
         # Valve controller
-        self.valves = minimalmodbus.Instrument("/dev/ttyCH9344USB8", 1)
+        valve_port = find_port_for_slave(3)
+        self.valves = minimalmodbus.Instrument(valve_port, 3)
         self.valves.mode    = minimalmodbus.MODE_RTU
         self.valves.serial.baudrate = 9600
         self.valves.serial.timeout  = 0.05

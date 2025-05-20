@@ -215,13 +215,14 @@ class UIManager:
         self.root.mainloop()
 
     def on_close(self):
-        """Handle exit: stop controller and close UI."""
+        """Handle exit: stop controller and exit UI."""
+        logging.info("UIManager: exit requested")
         try:
             self.controller.stop()
         except Exception:
             logging.exception("Error while stopping controller")
-        finally:
-            self.root.destroy()
+        # Quit the Tkinter mainloop to allow the script to continue and exit
+        self.root.quit()
 
     def on_flavour_change(self, name):
         self.controller.select_flavour(name)
