@@ -25,6 +25,8 @@ class UIManager:
         self.root.title("Filling Machine Control")
         self.root.attributes('-fullscreen', True)
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
+        # guard against multiple exit presses
+        self._closing = False
 
         # Tabs
         self.notebook = ttk.Notebook(self.root)
@@ -41,9 +43,9 @@ class UIManager:
         self.clean_button = ttk.Button(clean_frame, text="Clean", command=self.toggle_clean,
                                        style='Large.TButton', width=16)
         self.clean_button.grid(row=0, column=0, padx=10)
-        exit_button = ttk.Button(clean_frame, text="Exit", command=self.on_close,
+        self.exit_button = ttk.Button(clean_frame, text="Exit", command=self.on_close,
                                  style='Large.TButton', width=16)
-        exit_button.grid(row=0, column=1, padx=10)
+        self.exit_button.grid(row=0, column=1, padx=10)
 
         # Cleaning speed slider
         speed_clean_frame = ttk.LabelFrame(clean_tab, text="Cleaning Speed (Hz)")
@@ -215,14 +217,31 @@ class UIManager:
         self.root.mainloop()
 
     def on_close(self):
-        """Handle exit: stop controller and exit UI."""
+        """Handle exit: stop controller and exit UI, idempotent."""
+        if self._closing:
+            return
+        self._closing = True
         logging.info("UIManager: exit requested")
+        # disable exit button to prevent double-click
+        try:
+            self.exit_button.config(state="disabled")
+        except Exception:
+            pass
+        # stop controller
         try:
             self.controller.stop()
         except Exception:
             logging.exception("Error while stopping controller")
-        # Quit the Tkinter mainloop to allow the script to continue and exit
-        self.root.quit()
+        # quit Tkinter mainloop
+        try:
+            self.root.quit()
+        except Exception:
+            logging.exception("Error while quitting UI")
+        # destroy the window
+        try:
+            self.root.destroy()
+        except Exception:
+            logging.exception("Error while destroying UI")
 
     def on_flavour_change(self, name):
         self.controller.select_flavour(name)
