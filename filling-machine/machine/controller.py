@@ -321,8 +321,10 @@ class MachineController:
                     if abs(w - self.mould_weight) <= self.mould_weight * self._mould_tol:
                         self._consec_count += 1
                         if self._consec_count >= self._confirm_readings:
-                            logging.info("Mould confirmed; waiting 5 seconds for user adjustment before taring and filling")
-                            time.sleep(5)
+                            # Delay before starting fill to allow user to adjust moulds
+                            delay = self.config.get("mould_adjust_delay")
+                            logging.info(f"Mould confirmed; waiting {delay} seconds for user adjustment before taring and filling")
+                            time.sleep(delay)
                             # Record tare and start left fill
                             self._tare_weight = w
                             self._left_tare = w

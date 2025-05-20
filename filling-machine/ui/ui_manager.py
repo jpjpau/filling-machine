@@ -117,7 +117,7 @@ class UIManager:
         ttk.Scale(
             speed_frame,
             from_=0.5,
-            to=10,
+            to=30,
             variable=self.slow_speed_var,
             command=self.on_slow_speed_change
         ).pack(fill="x", padx=5)
