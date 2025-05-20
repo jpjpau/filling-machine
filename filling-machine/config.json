@@ -14,7 +14,7 @@
   "clean_initial_delay": 1.0,
   "clean_interval": 10.0,
   "clean_toggle_delay": 1.0,
-  "clean_stop_delay": 5.0,
+  "clean_stop_delay": 1.0,
   "vfd_run_command": 2,
   "vfd_stop_command": 1,
   "vfd_poll_interval":     0.05,
