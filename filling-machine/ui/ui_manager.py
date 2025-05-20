@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 import tkinter.font as tkFont
+import logging
 
 class UIManager:
     """
@@ -43,6 +44,23 @@ class UIManager:
         exit_button = ttk.Button(clean_frame, text="Exit", command=self.on_close,
                                  style='Large.TButton', width=16)
         exit_button.grid(row=0, column=1, padx=10)
+
+        # Cleaning speed slider
+        speed_clean_frame = ttk.LabelFrame(clean_tab, text="Cleaning Speed (Hz)")
+        speed_clean_frame.pack(fill="x", padx=10, pady=5)
+        self.clean_speed_var = tk.DoubleVar(value=self.controller.clean_speed)
+        ttk.Scale(
+            speed_clean_frame,
+            from_=5,
+            to=150,
+            variable=self.clean_speed_var,
+            command=self.on_clean_speed_change
+        ).pack(fill="x", padx=5)
+        self.clean_speed_label = ttk.Label(
+            speed_clean_frame,
+            text=f"{self.controller.clean_speed:.2f} Hz"
+        )
+        self.clean_speed_label.pack(padx=5, pady=(0,5))
 
         # --- Fill Tab ---
         fill_tab = ttk.Frame(self.notebook)
@@ -197,8 +215,13 @@ class UIManager:
         self.root.mainloop()
 
     def on_close(self):
-        self.controller.stop()
-        self.root.destroy()
+        """Handle exit: stop controller and close UI."""
+        try:
+            self.controller.stop()
+        except Exception:
+            logging.exception("Error while stopping controller")
+        finally:
+            self.root.destroy()
 
     def on_flavour_change(self, name):
         self.controller.select_flavour(name)
@@ -268,3 +291,8 @@ class UIManager:
         self.right_pour_label.config(text=f"Right Pour: {right_pour:.2f} kg")
         # Schedule next update
         self.root.after(30, self.update_ui)
+
+    def on_clean_speed_change(self, val):
+        speed = float(val)
+        self.controller.clean_speed = speed
+        self.clean_speed_label.config(text=f"{speed:.2f} Hz")
