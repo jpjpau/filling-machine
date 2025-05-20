@@ -95,8 +95,8 @@ class MachineController:
         
         # --- WATCHDOG SETUP ---
         # how often we check (seconds) and how long before we consider a thread dead
-        self.watchdog_interval  = self.config.get("watchdog_interval",  1.0)
-        self.watchdog_threshold = self.config.get("watchdog_threshold", 2.0)
+        self.watchdog_interval  = self.config.get("watchdog_interval")
+        self.watchdog_threshold = self.config.get("watchdog_threshold")
 
         # store last “beat” timestamp per thread
         self._last_heartbeat = {
