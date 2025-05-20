@@ -292,7 +292,6 @@ class MachineController:
         toggle_delay= cfg.get("clean_toggle_delay")
 
         while not self._clean_stop.is_set():
-            time.sleep(interval)
             # Inside the loop, to handle dynamic speed changes
             self.clean_speed = self.config.get("clean_speed")
             # Always use refreshed self.clean_speed for VFD speed
@@ -306,6 +305,7 @@ class MachineController:
                 time.sleep(toggle_delay)
                 self.valve2 = False
             left_open = not left_open
+            time.sleep(interval)
 
         logging.info("Exiting clean loop")
 
