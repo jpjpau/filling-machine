@@ -258,7 +258,8 @@ class UIManager:
 
     def on_prime_press(self, event):
         # Open both valves and start VFD at fast speed
-        self.controller.modbus.set_valve("both", "open")
+        self.controller.valve1     = True
+        self.controller.valve2     = True
         self.controller.vfd_state = 6
         self.controller.vfd_speed = int(self.controller.speed_fast * 100)
 
@@ -266,7 +267,8 @@ class UIManager:
         # Stop VFD and close valves
         self.controller.vfd_state = 0
         self.controller.vfd_speed = 0
-        self.controller.modbus.set_valve("both", "close")
+        self.controller.valve1     = False
+        self.controller.valve2     = False
 
     def on_tab_changed(self, event):
         """Enable filling in controller when Fill tab is selected."""
