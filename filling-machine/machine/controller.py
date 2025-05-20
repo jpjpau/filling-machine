@@ -66,6 +66,8 @@ class MachineController:
 
         self.speed_fast        = config.get("fast_speed")           # e.g. 150.0 Hz
         self.speed_slow        = config.get("slow_speed")           # e.g. 50.0 Hz
+        # Cleaning speed (Hz), configurable via UI and config.json
+        self.clean_speed       = config.get("clean_speed")
 
         # State machine internals
         self._state         = self.STATE_WAITING_FOR_MOULD
@@ -278,8 +280,9 @@ class MachineController:
         # initial left-open and VFD start
         self.valve1 = True
         time.sleep(cfg.get("clean_initial_delay"))
+        self.clean_speed = self.config.get("clean_speed")
         self.vfd_state = self.vfd_run_cmd
-        self.vfd_speed = int(cfg.get("clean_speed") * 100)
+        self.vfd_speed = int(self.clean_speed * 100)
 
         # alternate cycle
         left_open = True
@@ -288,6 +291,10 @@ class MachineController:
 
         while not self._clean_stop.is_set():
             time.sleep(interval)
+            # Inside the loop, to handle dynamic speed changes
+            self.clean_speed = self.config.get("clean_speed")
+            # Always use refreshed self.clean_speed for VFD speed
+            self.vfd_speed = int(self.clean_speed * 100)
             if left_open:
                 self.valve2 = True
                 time.sleep(toggle_delay)
