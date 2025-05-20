@@ -339,12 +339,14 @@ class MachineController:
 
                 # 2) Fast-fill left until within fill tolerance
                 elif self._state == self.STATE_FILL_LEFT_FAST:
+                    self.vfd_speed = int(self.speed_fast * 100)
                     if (w - self._tare_weight) >= self.desired_volume * (1 - self._fill_tol):
                         self.vfd_speed = int(self.speed_slow * 100)
                         self._state    = self.STATE_FILL_LEFT_SLOW
 
                 # 3) Slow-fill left until target reached
                 elif self._state == self.STATE_FILL_LEFT_SLOW:
+                    self.vfd_speed = int(self.speed_slow * 100)
                     if (w - self._tare_weight) >= self.desired_volume:
                         # Record final left pour amount
                         poured_left = self.actual_weight - self._left_tare
@@ -369,12 +371,14 @@ class MachineController:
 
                 # 5) Fast-fill right
                 elif self._state == self.STATE_FILL_RIGHT_FAST:
+                    self.vfd_speed = int(self.speed_fast * 100)
                     if (w - self._tare_weight) >= self.desired_volume * (1 - self._fill_tol):
                         self.vfd_speed = int(self.speed_slow * 100)
                         self._state    = self.STATE_FILL_RIGHT_SLOW
 
                 # 6) Slow-fill right until done
                 elif self._state == self.STATE_FILL_RIGHT_SLOW:
+                    self.vfd_speed = int(self.speed_slow * 100)
                     if (w - self._tare_weight) >= self.desired_volume:
                         # Record final right pour amount
                         poured_right = self.actual_weight - self._right_tare
