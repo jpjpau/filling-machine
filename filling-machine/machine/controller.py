@@ -92,6 +92,24 @@ class MachineController:
 
         # Fill activation event, only start filling when UI Fill tab selected
         self._filling_event = threading.Event()
+        
+        # --- WATCHDOG SETUP ---
+        # how often we check (seconds) and how long before we consider a thread dead
+        self.watchdog_interval  = self.config.get("watchdog_interval",  1.0)
+        self.watchdog_threshold = self.config.get("watchdog_threshold", 2.0)
+
+        # store last “beat” timestamp per thread
+        self._last_heartbeat = {
+            "modbus": time.time(),
+            "scale":  time.time(),
+            "valve":  time.time(),
+        }
+        self.watchdog_ok = True
+
+        self._watchdog_thread = threading.Thread(
+            target=self._watchdog_loop, daemon=True
+        )
+        self._watchdog_thread.start()
 
     def select_flavour(self, name: str) -> None:
         """
@@ -202,6 +220,22 @@ class MachineController:
 
         logging.info("MachineController: stopped")
 
+    def _feed_watchdog(self, name:str):
+        self._last_heartbeat[name] = time.time()
+        
+    def _watchdog_loop(self):
+        """Periodically check that each thread has called _feed_watchdog recently."""
+        while not self.kill_all.is_set():
+            now = time.time()
+            all_good = True
+            for name, ts in self._last_heartbeat.items():
+                if now - ts > self.watchdog_threshold:
+                    logging.error(f"Watchdog: {name} thread unresponsive!")
+                    all_good = False
+            if all_good and not self.watchdog_ok:
+                logging.info("Watchdog: all threads healthy again.")
+            self.watchdog_ok = all_good
+            time.sleep(self.watchdog_interval)
 
     def _vfd_loop(self) -> None:
         """
@@ -211,6 +245,7 @@ class MachineController:
             try:
                 self.modbus.set_vfd_state(self.vfd_state)
                 self.modbus.set_vfd_speed(self.vfd_speed)
+                self._feed_watchdog("modbus_vfd")
             except NoResponseError as e:
                 logging.debug(f"VFD no response: {e}")
             except Exception:
@@ -225,6 +260,7 @@ class MachineController:
             try:
                 self.modbus.set_valve("left",  "open" if self.valve1 else "close")
                 self.modbus.set_valve("right", "open" if self.valve2 else "close")
+                self._feed_watchdog("modbus_valve")
                 print(f"Valve1: {self.valve1}, Valve2: {self.valve2}")
             except NoResponseError as e:
                 logging.debug(f"Valve no response: {e}")
@@ -239,6 +275,7 @@ class MachineController:
         while not self.kill_all.is_set():
             try:
                 self.actual_weight = self.modbus.read_load_cell()
+                self._feed_watchdog("modbus_scale")
             except NoResponseError as e:
                 logging.debug(f"Scale no response: {e}")
             except Exception:

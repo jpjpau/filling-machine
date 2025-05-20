@@ -166,6 +166,10 @@ class UIManager:
             font=(None, 12, 'bold')
         )
         self.status_label.pack(side="left", padx=5)
+        
+        self.watchdog_label = ttk.Label(status_frame, text="WDG: OK", font=(None,12,'bold'))
+        self.watchdog_label.pack(side="left", padx=10)
+        self._blink    = False
 
         # --- Settings Tab ---
         settings_tab = ttk.Frame(self.notebook)
@@ -258,8 +262,8 @@ class UIManager:
 
     def on_prime_press(self, event):
         # Open both valves and start VFD at fast speed
-        self.controller.valve1     = True
-        self.controller.valve2     = True
+        self.controller.valve1    = True
+        self.controller.valve2    = True
         self.controller.vfd_state = 6
         self.controller.vfd_speed = int(self.controller.speed_fast * 100)
 
@@ -267,8 +271,8 @@ class UIManager:
         # Stop VFD and close valves
         self.controller.vfd_state = 0
         self.controller.vfd_speed = 0
-        self.controller.valve1     = False
-        self.controller.valve2     = False
+        self.controller.valve1    = False
+        self.controller.valve2    = False
 
     def on_tab_changed(self, event):
         """Enable filling in controller when Fill tab is selected."""
@@ -311,6 +315,18 @@ class UIManager:
 
         self.left_pour_label.config(text=f"Left Pour: {left_pour:.2f} kg")
         self.right_pour_label.config(text=f"Right Pour: {right_pour:.2f} kg")
+        
+        # Watchdog indicator
+        if self.controller.watchdog_ok:
+            # blink green/bright‐green
+            color = "green" if self._blink else "lightgreen"
+            txt   = "WDG: OK"
+        else:
+            color = "red"
+            txt   = "WDG: FAIL"
+        self.watchdog_label.config(text=txt, foreground=color)
+        self._blink = not self._blink
+        
         # Schedule next update
         self.root.after(30, self.update_ui)
 
