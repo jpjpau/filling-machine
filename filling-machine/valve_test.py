@@ -26,7 +26,7 @@ def main():
             logger.warning(f"Failed to kill processes using {dev}: {e}")
     # Configure the valve controller instrument
     time.sleep(1)  # Wait for the serial port to be released
-    instrument = minimalmodbus.Instrument("/dev/ttyCH9344USB0", 1)  # port, slave address
+    instrument = minimalmodbus.Instrument("/dev/ttyCH9344USB8", 1)  # port, slave address
     instrument.mode = minimalmodbus.MODE_RTU
     instrument.serial.baudrate = 9600
     instrument.serial.timeout = 0.05
