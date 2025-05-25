@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import tkinter.font as tkFont
 import logging
+import time
 
 class UIManager:
     """
@@ -170,6 +171,9 @@ class UIManager:
         self.watchdog_label = ttk.Label(status_frame, text="WDG: OK", font=(None,12,'bold'))
         self.watchdog_label.pack(side="left", padx=10)
         self._blink    = False
+        # control watchdog blink rate
+        self.blink_interval = 0.5  # seconds between blink toggles
+        self._last_blink_time = time.time()
 
         # --- Settings Tab ---
         settings_tab = ttk.Frame(self.notebook)
@@ -318,14 +322,17 @@ class UIManager:
         
         # Watchdog indicator
         if self.controller.watchdog_ok:
-            # blink green/bright‐green
+            # blink green/bright-green at controlled interval
+            now = time.time()
+            if now - self._last_blink_time >= self.blink_interval:
+                self._blink = not self._blink
+                self._last_blink_time = now
             color = "green" if self._blink else "lightgreen"
             txt   = "WDG: OK"
         else:
             color = "red"
             txt   = "WDG: FAIL"
         self.watchdog_label.config(text=txt, foreground=color)
-        self._blink = not self._blink
         
         # Schedule next update
         self.root.after(30, self.update_ui)
