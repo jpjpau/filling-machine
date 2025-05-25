@@ -275,8 +275,8 @@ class UIManager:
         # Stop VFD and close valves
         self.controller.vfd_state = 0
         self.controller.vfd_speed = 0
-        self.controller.valve1    = False
-        self.controller.valve2    = False
+        self.controller.valve1    = True
+        self.controller.valve2    = True
 
     def on_tab_changed(self, event):
         """Enable filling in controller when Fill tab is selected."""
