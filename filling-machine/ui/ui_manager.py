@@ -148,18 +148,14 @@ class UIManager:
         )
         self.slow_speed_label.pack(padx=5, pady=(0,5))
 
-        # Prime toggle button
+        # Prime button (press-and-hold)
         prime_frame = ttk.Frame(fill_tab)
         prime_frame.pack(pady=10)
-        self.prime_on = False
-        self.prime_button = ttk.Button(
-            prime_frame,
-            text="Start Prime",
-            style='Large.TButton',
-            width=20,
-            command=self.toggle_prime
-        )
+        self.prime_button = ttk.Button(prime_frame, text="Prime",
+                                       style='Large.TButton', width=20)
         self.prime_button.pack()
+        self.prime_button.bind("<ButtonPress>", self.on_prime_press)
+        self.prime_button.bind("<ButtonRelease>", self.on_prime_release)
 
         # Status display
         status_frame = ttk.Frame(fill_tab)
@@ -268,6 +264,19 @@ class UIManager:
         self.controller.speed_slow = speed
         self.slow_speed_label.config(text=f"{speed:.2f} Hz")
 
+    def on_prime_press(self, event):
+        # Open both valves and start VFD at fast speed
+        self.controller.valve1    = True
+        self.controller.valve2    = True
+        self.controller.vfd_state = 6
+        self.controller.vfd_speed = int(self.controller.speed_fast * 100)
+
+    def on_prime_release(self, event):
+        # Stop VFD and close valves
+        self.controller.vfd_state = 0
+        self.controller.vfd_speed = 0
+        self.controller.valve1    = True
+        self.controller.valve2    = True
 
     def on_tab_changed(self, event):
         """Enable filling in controller when Fill tab is selected."""
@@ -332,22 +341,3 @@ class UIManager:
         speed = float(val)
         self.controller.clean_speed = speed
         self.clean_speed_label.config(text=f"{speed:.2f} Hz")
-
-    def toggle_prime(self):
-        """Toggle priming on/off from the UI."""
-        if not self.prime_on:
-            # start priming
-            self.prime_on = True
-            self.prime_button.config(text="Stop Prime")
-            self.controller.valve1 = True
-            self.controller.valve2 = True
-            self.controller.vfd_state = 6
-            self.controller.vfd_speed = int(self.controller.speed_fast * 100)
-        else:
-            # stop priming
-            self.prime_on = False
-            self.prime_button.config(text="Start Prime")
-            self.controller.vfd_state = 0
-            self.controller.vfd_speed = 0
-            self.controller.valve1 = False
-            self.controller.valve2 = False
