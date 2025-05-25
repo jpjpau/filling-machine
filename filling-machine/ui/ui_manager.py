@@ -119,10 +119,11 @@ class UIManager:
         # Fast speed slider
         ttk.Label(speed_frame, text="Fast Speed (Hz):").pack(anchor="w", padx=5)
         self.fast_speed_var = tk.DoubleVar(value=self.controller.speed_fast)
-        ttk.Scale(
+        tk.Scale(
             speed_frame,
             from_=5,
             to=50,
+            orient=tk.HORIZONTAL,
             variable=self.fast_speed_var,
             command=self.on_fast_speed_change,
             sliderlength=40,
@@ -137,10 +138,11 @@ class UIManager:
         # Slow speed slider
         ttk.Label(speed_frame, text="Slow Speed (Hz):").pack(anchor="w", padx=5)
         self.slow_speed_var = tk.DoubleVar(value=self.controller.speed_slow)
-        ttk.Scale(
+        tk.Scale(
             speed_frame,
             from_=0.5,
             to=30,
+            orient=tk.HORIZONTAL,
             variable=self.slow_speed_var,
             command=self.on_slow_speed_change,
             sliderlength=40,
