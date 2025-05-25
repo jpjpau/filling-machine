@@ -23,6 +23,7 @@ class UIManager:
         # Define a smaller button style for settings controls
         small_font = tkFont.Font(size=14)
         style.configure('Small.TButton', font=small_font, padding=[5,5])
+        style.configure('TMenubutton', font=default_font, padding=[10,10])
         self.root.title("Filling Machine Control")
         self.root.attributes('-fullscreen', True)
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
@@ -80,7 +81,8 @@ class UIManager:
             *self.controller.config.volumes.keys(),
             command=self.on_flavour_change
         )
-        self.flavour_menu.pack(fill="x", padx=5)
+        self.flavour_menu.pack(fill="x", padx=5, pady=5, ipady=10)
+        self.flavour_menu.config(width=20)
 
         # --- Measurements ---
         meas_frame = ttk.LabelFrame(fill_tab, text="Measurements")
