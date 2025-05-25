@@ -53,12 +53,16 @@ class UIManager:
         speed_clean_frame = ttk.LabelFrame(clean_tab, text="Cleaning Speed (Hz)")
         speed_clean_frame.pack(fill="x", padx=10, pady=5)
         self.clean_speed_var = tk.DoubleVar(value=self.controller.clean_speed)
-        ttk.Scale(
+        tk.Scale(
             speed_clean_frame,
             from_=5,
             to=150,
+            orient=tk.HORIZONTAL,
             variable=self.clean_speed_var,
-            command=self.on_clean_speed_change
+            command=self.on_clean_speed_change,
+            sliderlength=60,
+            length=400,
+            width=20
         ).pack(fill="x", padx=5)
         self.clean_speed_label = ttk.Label(
             speed_clean_frame,
@@ -83,6 +87,9 @@ class UIManager:
         )
         self.flavour_menu.pack(fill="x", padx=5, pady=5, ipady=10)
         self.flavour_menu.config(width=20)
+        # Enlarge the font of dropdown items
+        menu = self.flavour_menu["menu"]
+        menu.config(font=default_font)
 
         # --- Measurements ---
         meas_frame = ttk.LabelFrame(fill_tab, text="Measurements")
