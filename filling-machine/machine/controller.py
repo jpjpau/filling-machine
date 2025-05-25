@@ -100,9 +100,9 @@ class MachineController:
 
         # store last “beat” timestamp per thread
         self._last_heartbeat = {
-            "modbus": time.time(),
-            "scale":  time.time(),
-            "valve":  time.time(),
+            "modbus_vfd": time.time(),
+            "modbus_valve": time.time(),
+            "modbus_scale": time.time(),
         }
         self.watchdog_ok = True
 
