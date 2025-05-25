@@ -148,14 +148,27 @@ class UIManager:
         )
         self.slow_speed_label.pack(padx=5, pady=(0,5))
 
-        # Prime button (press-and-hold)
+        # Top-up & prime buttons (press-and-hold)
         prime_frame = ttk.Frame(fill_tab)
         prime_frame.pack(pady=10)
+        # Top Up Left
+        self.top_left_button = ttk.Button(prime_frame, text="Top Up Left",
+                                          style='Large.TButton', width=16)
+        self.top_left_button.grid(row=0, column=0, padx=5)
+        self.top_left_button.bind("<ButtonPress>", self.on_top_up_left_press)
+        self.top_left_button.bind("<ButtonRelease>", self.on_top_up_left_release)
+        # Prime (both valves)
         self.prime_button = ttk.Button(prime_frame, text="Prime",
                                        style='Large.TButton', width=20)
-        self.prime_button.pack()
+        self.prime_button.grid(row=0, column=1, padx=5)
         self.prime_button.bind("<ButtonPress>", self.on_prime_press)
         self.prime_button.bind("<ButtonRelease>", self.on_prime_release)
+        # Top Up Right
+        self.top_right_button = ttk.Button(prime_frame, text="Top Up Right",
+                                           style='Large.TButton', width=16)
+        self.top_right_button.grid(row=0, column=2, padx=5)
+        self.top_right_button.bind("<ButtonPress>", self.on_top_up_right_press)
+        self.top_right_button.bind("<ButtonRelease>", self.on_top_up_right_release)
 
         # Status display
         status_frame = ttk.Frame(fill_tab)
@@ -277,6 +290,30 @@ class UIManager:
         self.controller.vfd_speed = 0
         self.controller.valve1    = False
         self.controller.valve2    = False
+
+    def on_top_up_left_press(self, event):
+        # Open left valve and start VFD at fast speed
+        self.controller.valve1 = True
+        self.controller.vfd_state = 6
+        self.controller.vfd_speed = int(self.controller.speed_fast * 100)
+
+    def on_top_up_left_release(self, event):
+        # Stop VFD and close left valve
+        self.controller.vfd_state = 0
+        self.controller.vfd_speed = 0
+        self.controller.valve1 = False
+
+    def on_top_up_right_press(self, event):
+        # Open right valve and start VFD at fast speed
+        self.controller.valve2 = True
+        self.controller.vfd_state = 6
+        self.controller.vfd_speed = int(self.controller.speed_fast * 100)
+
+    def on_top_up_right_release(self, event):
+        # Stop VFD and close right valve
+        self.controller.vfd_state = 0
+        self.controller.vfd_speed = 0
+        self.controller.valve2 = False
 
     def on_tab_changed(self, event):
         """Enable filling in controller when Fill tab is selected."""
