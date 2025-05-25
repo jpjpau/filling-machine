@@ -124,7 +124,9 @@ class UIManager:
             from_=5,
             to=50,
             variable=self.fast_speed_var,
-            command=self.on_fast_speed_change
+            command=self.on_fast_speed_change,
+            sliderlength=40,
+            length=400
         ).pack(fill="x", padx=5)
         self.fast_speed_label = ttk.Label(
             speed_frame,
@@ -140,7 +142,9 @@ class UIManager:
             from_=0.5,
             to=30,
             variable=self.slow_speed_var,
-            command=self.on_slow_speed_change
+            command=self.on_slow_speed_change,
+            sliderlength=40,
+            length=400
         ).pack(fill="x", padx=5)
         self.slow_speed_label = ttk.Label(
             speed_frame,
