@@ -5,7 +5,7 @@
   "post_fill_delay": 0.5,
   "mould_tolerance": 0.20,
   "fill_tolerance": 0.2,
-  "removal_tolerance": 0.02,
+  "removal_tolerance": 0.07,
   "confirm_readings": 3,
   "confirm_removals": 3,
   "fast_speed": 15.0,
