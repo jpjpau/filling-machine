@@ -349,6 +349,9 @@ class UIManager:
             self.cleaning = False
 
     def update_ui(self):
+        # Stop scheduling updates once closing has begun
+        if getattr(self, "_closing", False):
+            return
         # Refresh dynamic labels
         self.status_label.config(text=self.controller._state)
         self.fast_speed_label.config(text=f"{self.controller.speed_fast:.2f} Hz")
