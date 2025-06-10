@@ -199,6 +199,8 @@ class MachineController:
         """
         Signal threads to stop and wait for them. Ensure clean shutdown.
         """
+        # Ensure the filling loop unblocks if waiting for UI
+        self._filling_event.set()
         self.kill_all.set()
         for t in self._threads:
             t.join()
