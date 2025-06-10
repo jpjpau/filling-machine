@@ -254,32 +254,40 @@ class UIManager:
     def run(self):
         self.root.mainloop()
 
-    def on_close(self):
-        """Handle exit: stop controller and exit UI, idempotent."""
-        if self._closing:
-            return
-        self._closing = True
-        logging.info("UIManager: exit requested")
-        # disable exit button to prevent double-click
-        try:
-            self.exit_button.config(state="disabled")
-        except Exception:
-            pass
-        # stop controller
-        try:
-            self.controller.stop()
-        except Exception:
-            logging.exception("Error while stopping controller")
-        # quit Tkinter mainloop
-        try:
-            self.root.quit()
-        except Exception:
-            logging.exception("Error while quitting UI")
-        # destroy the window
-        try:
-            self.root.destroy()
-        except Exception:
-            logging.exception("Error while destroying UI")
+def on_close(self):
+    """Handle exit: stop controller and exit UI, idempotent."""
+    logging.info("on_close: ENTER")
+    if self._closing:
+        logging.info("on_close: already closing — returning immediately")
+        return
+    self._closing = True
+    logging.info("on_close: _closing flag set, now disabling Exit button")
+    try:
+        self.exit_button.config(state="disabled")
+        logging.info("on_close: Exit button disabled")
+    except Exception:
+        logging.exception("on_close: failed to disable Exit button")
+
+    logging.info("on_close: calling controller.stop()")
+    try:
+        self.controller.stop()
+        logging.info("on_close: controller.stop() returned")
+    except Exception:
+        logging.exception("on_close: exception in controller.stop()")
+
+    logging.info("on_close: calling root.quit()")
+    try:
+        self.root.quit()
+        logging.info("on_close: root.quit() returned")
+    except Exception:
+        logging.exception("on_close: exception in root.quit()")
+
+    logging.info("on_close: calling root.destroy()")
+    try:
+        self.root.destroy()
+        logging.info("on_close: root.destroy() returned")
+    except Exception:
+        logging.exception("on_close: exception in root.destroy()")
 
     def on_flavour_change(self, name):
         self.controller.select_flavour(name)

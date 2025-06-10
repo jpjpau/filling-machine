@@ -41,4 +41,14 @@ def main():
         logger.info("Application exited cleanly")
 
 if __name__ == "__main__":
-    main()
+    logging.basicConfig(level=logging.INFO,
+                        format="%(asctime)s %(levelname)s:%(name)s:%(message)s")
+    controller = MachineController(cfg, modbus, mqtt)
+    ui = UIManager(controller)
+    logging.info("main: starting UI loop")
+    try:
+        ui.run()
+    finally:
+        logging.info("main: UI loop exited, calling controller.stop()")
+        controller.stop()
+        logging.info("main: controller.stop() completed, exiting")
