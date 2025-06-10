@@ -254,40 +254,40 @@ class UIManager:
     def run(self):
         self.root.mainloop()
 
-def on_close(self):
-    """Handle exit: stop controller and exit UI, idempotent."""
-    logging.info("on_close: ENTER")
-    if self._closing:
-        logging.info("on_close: already closing — returning immediately")
-        return
-    self._closing = True
-    logging.info("on_close: _closing flag set, now disabling Exit button")
-    try:
-        self.exit_button.config(state="disabled")
-        logging.info("on_close: Exit button disabled")
-    except Exception:
-        logging.exception("on_close: failed to disable Exit button")
+    def on_close(self):
+        """Handle exit: stop controller and exit UI, idempotent."""
+        logging.info("on_close: ENTER")
+        if self._closing:
+            logging.info("on_close: already closing — returning immediately")
+            return
+        self._closing = True
+        logging.info("on_close: _closing flag set, now disabling Exit button")
+        try:
+            self.exit_button.config(state="disabled")
+            logging.info("on_close: Exit button disabled")
+        except Exception:
+            logging.exception("on_close: failed to disable Exit button")
 
-    logging.info("on_close: calling controller.stop()")
-    try:
-        self.controller.stop()
-        logging.info("on_close: controller.stop() returned")
-    except Exception:
-        logging.exception("on_close: exception in controller.stop()")
+        logging.info("on_close: calling controller.stop()")
+        try:
+            self.controller.stop()
+            logging.info("on_close: controller.stop() returned")
+        except Exception:
+            logging.exception("on_close: exception in controller.stop()")
 
-    logging.info("on_close: calling root.quit()")
-    try:
-        self.root.quit()
-        logging.info("on_close: root.quit() returned")
-    except Exception:
-        logging.exception("on_close: exception in root.quit()")
+        logging.info("on_close: calling root.quit()")
+        try:
+            self.root.quit()
+            logging.info("on_close: root.quit() returned")
+        except Exception:
+            logging.exception("on_close: exception in root.quit()")
 
-    logging.info("on_close: calling root.destroy()")
-    try:
-        self.root.destroy()
-        logging.info("on_close: root.destroy() returned")
-    except Exception:
-        logging.exception("on_close: exception in root.destroy()")
+        logging.info("on_close: calling root.destroy()")
+        try:
+            self.root.destroy()
+            logging.info("on_close: root.destroy() returned")
+        except Exception:
+            logging.exception("on_close: exception in root.destroy()")
 
     def on_flavour_change(self, name):
         self.controller.select_flavour(name)
