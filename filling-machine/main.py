@@ -16,7 +16,7 @@ os.makedirs("logs", exist_ok=True)
 log_filename = datetime.now().strftime("logs/filling_machine_%Y%m%d_%H%M%S.log")
 
 logger = logging.getLogger("filling_machine")
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 # File handler with date/time-based log filename
 file_handler = logging.FileHandler(log_filename)
