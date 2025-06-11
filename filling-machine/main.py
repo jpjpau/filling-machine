@@ -26,7 +26,7 @@ file_handler.setFormatter(file_formatter)
 logger.addHandler(file_handler)
 
 # Syslog handler (UDP to remote syslog server)
-syslog_handler = logging.handlers.SysLogHandler(address=('192.168.15.6', 514), socktype=socket.SOCK_DGRAM)
+syslog_handler = logging.handlers.SysLogHandler(address=('192.168.15.6', 1514), socktype=socket.SOCK_DGRAM)
 syslog_formatter = logging.Formatter('%(name)s: %(levelname)s %(message)s')
 syslog_handler.setFormatter(syslog_formatter)
 logger.addHandler(syslog_handler)
