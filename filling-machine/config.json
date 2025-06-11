@@ -7,7 +7,7 @@
   "fill_tolerance": 0.2,
   "removal_tolerance": 0.12,
   "confirm_readings": 3,
-  "confirm_removals": 3,
+  "confirm_removals": 30,
   "fast_speed": 15.0,
   "slow_speed": 3.0,
   "clean_speed": 20.0,
