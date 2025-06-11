@@ -248,6 +248,8 @@ class MachineController:
                 self.modbus.set_vfd_state(self.vfd_state)
                 self.modbus.set_vfd_speed(self.vfd_speed)
                 self._feed_watchdog("modbus_vfd")
+                if int(time.time() * 10) % 5 == 0:  # Every 0.5 seconds
+                    logging.debug(f"VFD loop heartbeat: {self._last_heartbeat['modbus_vfd']}")
             except NoResponseError as e:
                 logging.debug(f"VFD no response: {e}")
             except Exception:
@@ -263,6 +265,8 @@ class MachineController:
                 self.modbus.set_valve("left",  "open" if self.valve1 else "close")
                 self.modbus.set_valve("right", "open" if self.valve2 else "close")
                 self._feed_watchdog("modbus_valve")
+                if int(time.time() * 10) % 5 == 0:
+                    logging.debug(f"Valve loop heartbeat: {self._last_heartbeat['modbus_valve']}")
                 print(f"Valve1: {self.valve1}, Valve2: {self.valve2}")
             except NoResponseError as e:
                 logging.debug(f"Valve no response: {e}")
@@ -278,6 +282,8 @@ class MachineController:
             try:
                 self.actual_weight = self.modbus.read_load_cell()
                 self._feed_watchdog("modbus_scale")
+                if int(time.time() * 10) % 5 == 0:
+                    logging.debug(f"Scale loop heartbeat: {self._last_heartbeat['modbus_scale']}")
             except NoResponseError as e:
                 logging.debug(f"Scale no response: {e}")
             except Exception:
@@ -290,6 +296,7 @@ class MachineController:
         """
         while not self.kill_all.is_set():
             try:
+                logging.debug(f"Telemetry: weight={self.actual_weight}, VFD={self.vfd_state}@{self.vfd_speed}, valve1={self.valve1}, valve2={self.valve2}, status={self.filling_status}")
                 self.mqtt.publish("FillingMachine/ActualWeight", self.actual_weight)
                 self.mqtt.publish("FillingMachine/VFDState",      self.vfd_state)
                 self.mqtt.publish("FillingMachine/VFDSpeed",      self.vfd_speed)
@@ -308,6 +315,7 @@ class MachineController:
         if self._state != self.STATE_WAITING_FOR_MOULD:
             return False
         w = self.actual_weight
+        logging.debug(f"Detect mould check: actual={w}, target={self.mould_weight}, tol={self._mould_tol}")
         # Check if within mould tolerance
         return abs(w - self.mould_weight) <= self.mould_weight * self._mould_tol
 
@@ -360,12 +368,14 @@ class MachineController:
 
                 # 1) Waiting until a mould tray is placed
                 if self._state == self.STATE_WAITING_FOR_MOULD:
+                    logging.debug(f"Entering state: {self._state}, weight={w}")
                     if abs(w - self.mould_weight) <= self.mould_weight * self._mould_tol:
                         self._consec_count = 1
                         self._state = self.STATE_CONFIRMING_MOULD
 
                 # 1.1) Confirm consecutive mould readings
                 elif self._state == self.STATE_CONFIRMING_MOULD:
+                    logging.debug(f"Entering state: {self._state}, weight={w}")
                     if abs(w - self.mould_weight) <= self.mould_weight * self._mould_tol:
                         self._consec_count += 1
                         if self._consec_count >= self._confirm_readings:
@@ -387,6 +397,7 @@ class MachineController:
 
                 # 2) Fast-fill left until within fill tolerance
                 elif self._state == self.STATE_FILL_LEFT_FAST:
+                    logging.debug(f"Entering state: {self._state}, weight={w}")
                     self.vfd_speed = int(self.speed_fast * 100)
                     if (w - self._tare_weight) >= self.desired_volume * (1 - self._fill_tol):
                         self.vfd_speed = int(self.speed_slow * 100)
@@ -394,6 +405,7 @@ class MachineController:
 
                 # 3) Slow-fill left until target reached
                 elif self._state == self.STATE_FILL_LEFT_SLOW:
+                    logging.debug(f"Entering state: {self._state}, weight={w}")
                     self.vfd_speed = int(self.speed_slow * 100)
                     if (w - self._tare_weight) >= self.desired_volume:
                         # Stop VFD and close left valve immediately
@@ -418,6 +430,7 @@ class MachineController:
 
                 # 4) Prep right: open valve, start fast fill
                 elif self._state == self.STATE_PREP_RIGHT:
+                    logging.debug(f"Entering state: {self._state}, weight={w}")
                     self._consec_count = 0
                     self._right_tare = w
                     self._tare_weight  = w
@@ -428,6 +441,7 @@ class MachineController:
 
                 # 5) Fast-fill right
                 elif self._state == self.STATE_FILL_RIGHT_FAST:
+                    logging.debug(f"Entering state: {self._state}, weight={w}")
                     self.vfd_speed = int(self.speed_fast * 100)
                     if (w - self._tare_weight) >= self.desired_volume * (1 - self._fill_tol):
                         self.vfd_speed = int(self.speed_slow * 100)
@@ -435,6 +449,7 @@ class MachineController:
 
                 # 6) Slow-fill right until done
                 elif self._state == self.STATE_FILL_RIGHT_SLOW:
+                    logging.debug(f"Entering state: {self._state}, weight={w}")
                     self.vfd_speed = int(self.speed_slow * 100)
                     if (w - self._tare_weight) >= self.desired_volume:
                         # Stop VFD and close right valve immediately
@@ -461,6 +476,7 @@ class MachineController:
 
                 # 7) Wait for tray removal (multiple zero readings)
                 elif self._state == self.STATE_WAIT_REMOVAL:
+                    logging.debug(f"Entering state: {self._state}, weight={w}")
                     if w <= self._removal_tol:
                         self._consec_count += 1
                         if self._consec_count >= self._confirm_removals:
