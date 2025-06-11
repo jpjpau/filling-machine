@@ -20,7 +20,7 @@ logger.setLevel(logging.DEBUG)
 
 # File handler with date/time-based log filename
 file_handler = logging.FileHandler(log_filename)
-file_handler.setLevel(logging.INFO)
+file_handler.setLevel(logging.DEBUG)
 file_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 file_handler.setFormatter(file_formatter)
 logger.addHandler(file_handler)
@@ -29,6 +29,7 @@ logger.addHandler(file_handler)
 syslog_handler = logging.handlers.SysLogHandler(address=('192.168.15.6', 1514), socktype=socket.SOCK_DGRAM)
 syslog_formatter = logging.Formatter('%(name)s: %(levelname)s %(message)s')
 syslog_handler.setFormatter(syslog_formatter)
+syslog_handler.setLevel(logging.DEBUG)
 logger.addHandler(syslog_handler)
 
 def main():
