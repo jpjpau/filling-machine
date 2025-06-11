@@ -365,7 +365,8 @@ class UIManager:
         self.fast_speed_label.config(text=f"{self.controller.speed_fast:.2f} Hz")
         self.slow_speed_label.config(text=f"{self.controller.speed_slow:.2f} Hz")
         # Update measurements
-        self.total_weight_label.config(text=f"Total: {self.controller.actual_weight:.2f} kg")
+        net_weight = self.controller.actual_weight - self.controller._tare_weight
+        self.total_weight_label.config(text=f"Total: {net_weight:.2f} kg")
         self.tare_weight_label.config(text=f"Tare: {self.controller._tare_weight:.2f} kg")
 
         # Determine left pour: dynamic during left fill then persist
