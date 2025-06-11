@@ -5,10 +5,31 @@ from machine.controller       import MachineController
 from ui.ui_manager            import UIManager
 import time
 import logging
+import logging.handlers
+import os
+from datetime import datetime
+import socket
 import subprocess
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# Create a logs directory if it doesn't exist
+os.makedirs("logs", exist_ok=True)
+log_filename = datetime.now().strftime("logs/filling_machine_%Y%m%d_%H%M%S.log")
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# File handler with date/time-based log filename
+file_handler = logging.FileHandler(log_filename)
+file_handler.setLevel(logging.INFO)
+file_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(file_formatter)
+logger.addHandler(file_handler)
+
+# Syslog handler (UDP to remote syslog server)
+syslog_handler = logging.handlers.SysLogHandler(address=('192.168.15.6', 514), socktype=socket.SOCK_DGRAM)
+syslog_formatter = logging.Formatter('%(name)s: %(levelname)s %(message)s')
+syslog_handler.setFormatter(syslog_formatter)
+logger.addHandler(syslog_handler)
 
 def main():
     # Kill any process holding the serial ports ttyCH9344USB0 through ttyCH9344USB7
