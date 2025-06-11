@@ -15,7 +15,7 @@ import subprocess
 os.makedirs("logs", exist_ok=True)
 log_filename = datetime.now().strftime("logs/filling_machine_%Y%m%d_%H%M%S.log")
 
-logger = logging.getLogger()
+logger = logging.getLogger("filling_machine")
 logger.setLevel(logging.INFO)
 
 # File handler with date/time-based log filename
