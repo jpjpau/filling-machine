@@ -15,7 +15,7 @@ from machine.mqtt_client import MqttClient
 
 import gpiod
 
-chip = gpiod.Chip('gpiochip4')
+chip = gpiod.Chip('gpiochip1')
 left_button_line = chip.get_line(17)
 right_button_line = chip.get_line(27)
 
