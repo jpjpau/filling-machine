@@ -165,24 +165,40 @@ class MachineController:
         return 0.0 if self._mould_tare is None else self._mould_tare
 
     def handle_left_button(self):
-        if not left_button_line.get_value():  # Button pressed
-            self.valve1 = True
-            self.vfd_state = self.vfd_run_cmd
-            self.vfd_speed = int(self.speed_slow * 100)
-        else:
+        button_pressed = not left_button_line.get_value()
+        manual_states = [self.STATE_WAITING_FOR_MOULD, self.STATE_WAIT_REMOVAL]
+
+        if button_pressed and self._state in manual_states:
+            if not hasattr(self, '_left_button_active'):
+                logging.info("Manual LEFT top-up activated.")
+                self._left_button_active = True
+                self.valve1 = True
+                self.vfd_state = self.vfd_run_cmd
+                self.vfd_speed = int(self.speed_slow * 100)
+        elif hasattr(self, '_left_button_active') and self._left_button_active:
+            logging.info("Manual LEFT top-up deactivated.")
             self.valve1 = False
             self.vfd_state = self.vfd_stop_cmd
             self.vfd_speed = 0
+            self._left_button_active = False
 
     def handle_right_button(self):
-        if not right_button_line.get_value():  # Button pressed
-            self.valve2 = True
-            self.vfd_state = self.vfd_run_cmd
-            self.vfd_speed = int(self.speed_slow * 100)
-        else:
+        button_pressed = not right_button_line.get_value()
+        manual_states = [self.STATE_WAITING_FOR_MOULD, self.STATE_WAIT_REMOVAL]
+
+        if button_pressed and self._state in manual_states:
+            if not hasattr(self, '_right_button_active'):
+                logging.info("Manual RIGHT top-up activated.")
+                self._right_button_active = True
+                self.valve2 = True
+                self.vfd_state = self.vfd_run_cmd
+                self.vfd_speed = int(self.speed_slow * 100)
+        elif hasattr(self, '_right_button_active') and self._right_button_active:
+            logging.info("Manual RIGHT top-up deactivated.")
             self.valve2 = False
             self.vfd_state = self.vfd_stop_cmd
             self.vfd_speed = 0
+            self._right_button_active = False
 
     def start(self) -> None:
         """
