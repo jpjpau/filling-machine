@@ -13,11 +13,14 @@ from config import Config
 from machine.modbus_interface import ModbusInterface
 from machine.mqtt_client import MqttClient
 
-import RPi.GPIO as GPIO
+import gpiod
 
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(17, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # Left button
-GPIO.setup(27, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # Right button
+chip = gpiod.Chip('gpiochip4')
+left_button_line = chip.get_line(17)
+right_button_line = chip.get_line(27)
+
+left_button_line.request(consumer="left_button", type=gpiod.LINE_REQ_DIR_IN, flags=gpiod.LINE_REQ_FLAG_BIAS_PULL_UP)
+right_button_line.request(consumer="right_button", type=gpiod.LINE_REQ_DIR_IN, flags=gpiod.LINE_REQ_FLAG_BIAS_PULL_UP)
 
 class MachineController:
     """
@@ -162,21 +165,21 @@ class MachineController:
         return 0.0 if self._mould_tare is None else self._mould_tare
 
     def handle_left_button(self):
-        if GPIO.input(17) == GPIO.LOW:  # Button pressed
+        if not left_button_line.get_value():  # Button pressed
             self.valve1 = True
             self.vfd_state = self.vfd_run_cmd
             self.vfd_speed = int(self.speed_slow * 100)
-        else:  # Button released
+        else:
             self.valve1 = False
             self.vfd_state = self.vfd_stop_cmd
             self.vfd_speed = 0
 
     def handle_right_button(self):
-        if GPIO.input(27) == GPIO.LOW:  # Button pressed
+        if not right_button_line.get_value():  # Button pressed
             self.valve2 = True
             self.vfd_state = self.vfd_run_cmd
             self.vfd_speed = int(self.speed_slow * 100)
-        else:  # Button released
+        else:
             self.valve2 = False
             self.vfd_state = self.vfd_stop_cmd
             self.vfd_speed = 0
@@ -232,7 +235,6 @@ class MachineController:
             t.join()
         time.sleep(1)  # allow time for threads to exit
         # Hardware shutdown
-        GPIO.cleanup()  # Clean up GPIO settings
         try:
             self.modbus.set_vfd_speed(0)
             self.modbus.set_vfd_state(self.vfd_stop_cmd)
