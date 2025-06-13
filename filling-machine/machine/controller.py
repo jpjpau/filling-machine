@@ -102,6 +102,10 @@ class MachineController:
         # Fill activation event, only start filling when UI Fill tab selected
         self._filling_event = threading.Event()
         
+        # Manual top-up button state
+        self._left_button_active = False
+        self._right_button_active = False
+        
         # --- WATCHDOG SETUP ---
         # how often we check (seconds) and how long before we consider a thread dead
         self.watchdog_interval  = self.config.get("watchdog_interval")
@@ -169,13 +173,13 @@ class MachineController:
         manual_states = [self.STATE_WAITING_FOR_MOULD, self.STATE_WAIT_REMOVAL]
 
         if button_pressed and self._state in manual_states:
-            if not hasattr(self, '_left_button_active'):
+            if not self._left_button_active:
                 logging.info("Manual LEFT top-up activated.")
                 self._left_button_active = True
                 self.valve1 = True
                 self.vfd_state = self.vfd_run_cmd
                 self.vfd_speed = int(self.speed_slow * 100)
-        elif hasattr(self, '_left_button_active') and self._left_button_active:
+        elif self._left_button_active:
             logging.info("Manual LEFT top-up deactivated.")
             self.valve1 = False
             self.vfd_state = self.vfd_stop_cmd
@@ -187,13 +191,13 @@ class MachineController:
         manual_states = [self.STATE_WAITING_FOR_MOULD, self.STATE_WAIT_REMOVAL]
 
         if button_pressed and self._state in manual_states:
-            if not hasattr(self, '_right_button_active'):
+            if not self._right_button_active:
                 logging.info("Manual RIGHT top-up activated.")
                 self._right_button_active = True
                 self.valve2 = True
                 self.vfd_state = self.vfd_run_cmd
                 self.vfd_speed = int(self.speed_slow * 100)
-        elif hasattr(self, '_right_button_active') and self._right_button_active:
+        elif self._right_button_active:
             logging.info("Manual RIGHT top-up deactivated.")
             self.valve2 = False
             self.vfd_state = self.vfd_stop_cmd
