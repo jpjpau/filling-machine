@@ -13,6 +13,12 @@ from config import Config
 from machine.modbus_interface import ModbusInterface
 from machine.mqtt_client import MqttClient
 
+import RPi.GPIO as GPIO
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(17, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # Left button
+GPIO.setup(27, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # Right button
+
 class MachineController:
     """
     Coordinates the filling machine: hardware control, telemetry, and filling logic.
@@ -155,6 +161,26 @@ class MachineController:
         """Weight of tray + moulds when first placed (before filling)."""
         return 0.0 if self._mould_tare is None else self._mould_tare
 
+    def handle_left_button(self):
+        if GPIO.input(17) == GPIO.LOW:  # Button pressed
+            self.valve1 = True
+            self.vfd_state = self.vfd_run_cmd
+            self.vfd_speed = int(self.speed_slow * 100)
+        else:  # Button released
+            self.valve1 = False
+            self.vfd_state = self.vfd_stop_cmd
+            self.vfd_speed = 0
+
+    def handle_right_button(self):
+        if GPIO.input(27) == GPIO.LOW:  # Button pressed
+            self.valve2 = True
+            self.vfd_state = self.vfd_run_cmd
+            self.vfd_speed = int(self.speed_slow * 100)
+        else:  # Button released
+            self.valve2 = False
+            self.vfd_state = self.vfd_stop_cmd
+            self.vfd_speed = 0
+
     def start(self) -> None:
         """
         Start background threads for modbus, monitoring, and filling loops.
@@ -206,6 +232,7 @@ class MachineController:
             t.join()
         time.sleep(1)  # allow time for threads to exit
         # Hardware shutdown
+        GPIO.cleanup()  # Clean up GPIO settings
         try:
             self.modbus.set_vfd_speed(0)
             self.modbus.set_vfd_state(self.vfd_stop_cmd)
@@ -364,6 +391,9 @@ class MachineController:
         self._filling_event.wait()
         while not self.kill_all.is_set():
             try:
+                self.handle_left_button()
+                self.handle_right_button()
+                
                 w = self.actual_weight
 
                 # 1) Waiting until a mould tray is placed
