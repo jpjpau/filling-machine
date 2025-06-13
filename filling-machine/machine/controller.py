@@ -404,6 +404,7 @@ class MachineController:
             time.sleep(interval)
 
         logging.info("Exiting clean loop")
+        self._cleaning_active = False
 
     def _filling_loop(self) -> None:
         """
