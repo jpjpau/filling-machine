@@ -17,7 +17,7 @@ import gpiod
 
 chip = gpiod.Chip('gpiochip0')
 left_button_line = chip.get_line(17)
-right_button_line = chip.get_line(27)
+right_button_line = chip.get_line(18)
 
 left_button_line.request(consumer="left_button", type=gpiod.LINE_REQ_DIR_IN, flags=gpiod.LINE_REQ_FLAG_BIAS_PULL_UP)
 right_button_line.request(consumer="right_button", type=gpiod.LINE_REQ_DIR_IN, flags=gpiod.LINE_REQ_FLAG_BIAS_PULL_UP)
