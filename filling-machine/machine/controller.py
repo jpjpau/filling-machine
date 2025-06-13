@@ -90,6 +90,7 @@ class MachineController:
         # Cleaning control
         self._clean_stop   = threading.Event()
         self._clean_thread = None
+        self._cleaning_active = False
 
         # Pour tracking
         self._left_tare = None
@@ -374,6 +375,7 @@ class MachineController:
         - Open left valve, wait initial delay, start VFD at clean_speed
         - Alternate opening right/left valves every clean_interval with toggle delays
         """
+        self._cleaning_active = True
         cfg = self.config
         # initial left-open and VFD start
         self.valve1 = True
