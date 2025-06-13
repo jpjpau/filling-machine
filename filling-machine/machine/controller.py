@@ -255,14 +255,11 @@ class MachineController:
         for t in self._threads:
             t.join()
         time.sleep(1)  # allow time for threads to exit
-        # Hardware shutdown
-        try:
-            self.modbus.set_vfd_speed(0)
-            self.modbus.set_vfd_state(self.vfd_stop_cmd)
-            self.modbus.set_valve("left",  "close")
-            self.modbus.set_valve("right", "close")
-        except Exception:
-            logging.exception("Error during hardware shutdown")
+        # Hardware shutdown (set class attributes only; Modbus threads handle hardware)
+        self.vfd_speed = 0
+        self.vfd_state = self.vfd_stop_cmd
+        self.valve1 = False
+        self.valve2 = False
 
         # Always disconnect MQTT
         try:
