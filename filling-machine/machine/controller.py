@@ -412,6 +412,11 @@ class MachineController:
         # Wait until UI triggers filling
         self._filling_event.wait()
         while not self.kill_all.is_set():
+            # Prevent filling logic if cleaning is active
+            if self._cleaning_active:
+                time.sleep(self._read_interval)
+                continue  # Skip filling state machine updates
+            
             try:
                 self.handle_left_button()
                 self.handle_right_button()
