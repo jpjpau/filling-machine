@@ -7,12 +7,20 @@ import time
 class UIManager:
     """
     Manages the Tkinter UI with Clean and Fill tabs, interacting with MachineController.
+    Provides methods to update UI state, handle user events, and update the controller.
     """
     def __init__(self, controller):
+        """
+        Initialize the UIManager, configure main window, tabs, and controls.
+        """
         self.controller = controller
         self.cleaning = False
 
-        # Main window
+        # Configure logger for UIManager
+        self.logger = logging.getLogger("UIManager")
+        self.logger.debug("Initializing UIManager")
+
+        # Main window setup
         self.root = tk.Tk()
         # Style configuration (after root exists to avoid stray windows)
         style = ttk.Style(self.root)
@@ -27,7 +35,7 @@ class UIManager:
         self.root.title("Filling Machine Control")
         self.root.attributes('-fullscreen', True)
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
-        # guard against multiple exit presses
+        # Guard against multiple exit presses
         self._closing = False
 
         # Tabs
@@ -201,7 +209,7 @@ class UIManager:
         self.watchdog_label = ttk.Label(status_frame, text="WDG: OK", font=(None,12,'bold'))
         self.watchdog_label.pack(side="left", padx=10)
         self._blink    = False
-        # control watchdog blink rate
+        # Control watchdog blink rate
         self.blink_interval = 0.5  # seconds between blink toggles
         self._last_blink_time = time.time()
 
@@ -237,128 +245,203 @@ class UIManager:
                               style='Small.TButton', width=11)
         save_btn.grid(row=1, column=0, columnspan=2, pady=5)
 
-        # Kick off update loop
+        # Start the periodic UI update loop
         self.root.after(100, self.update_ui)
 
     def save_flavours(self):
-        """Persist flavour changes to config.json."""
-        self.controller.config.save()
+        """
+        Persist flavour changes to config.json via the controller's config.
+        """
+        self.logger.info("Saving flavour settings to config.json")
+        try:
+            self.controller.config.save()
+            self.logger.info("Flavour settings saved successfully")
+        except Exception:
+            self.logger.exception("Failed to save flavour settings")
 
     def adjust_flavour(self, flavour, delta):
-        """Adjust a flavour volume by delta and update config."""
+        """
+        Adjust a flavour volume by delta and update config/UI.
+        Args:
+            flavour (str): Flavour name to adjust.
+            delta (float): Amount to adjust by.
+        """
         current = self.controller.config.get(flavour)
         new_val = round(current + delta, 2)
+        self.logger.debug(f"Adjusting flavour '{flavour}': {current:.2f} -> {new_val:.2f}")
         self.controller.config.set(flavour, new_val)
         self.flavour_vars[flavour].set(new_val)
 
     def run(self):
+        """
+        Start the Tkinter mainloop. This call blocks until the UI is closed.
+        """
+        self.logger.info("Starting UI mainloop")
         self.root.mainloop()
 
     def on_close(self):
-        """Handle exit: stop controller and exit UI, idempotent."""
-        logging.info("on_close: ENTER")
+        """
+        Handle exit: stop controller and exit UI, idempotent.
+        Ensures that the controller is stopped and the UI is closed safely.
+        """
+        self.logger.info("[UIManager] on_close: ENTER")
         if self._closing:
-            logging.info("on_close: already closing — returning immediately")
+            self.logger.info("[UIManager] on_close: already closing — returning immediately")
             return
         self._closing = True
-        logging.info("on_close: _closing flag set, now disabling Exit button")
+        self.logger.info("[UIManager] on_close: _closing flag set, disabling Exit button")
         try:
             self.exit_button.config(state="disabled")
-            logging.info("on_close: Exit button disabled")
+            self.logger.info("[UIManager] on_close: Exit button disabled")
         except Exception:
-            logging.exception("on_close: failed to disable Exit button")
+            self.logger.exception("[UIManager] on_close: failed to disable Exit button")
 
-        logging.info("on_close: calling controller.stop()")
+        self.logger.info("[UIManager] on_close: calling controller.stop()")
         try:
             self.controller.stop()
-            logging.info("on_close: controller.stop() returned")
+            self.logger.info("[UIManager] on_close: controller.stop() returned")
         except Exception:
-            logging.exception("on_close: exception in controller.stop()")
+            self.logger.exception("[UIManager] on_close: exception in controller.stop()")
 
-        logging.info("on_close: calling root.quit()")
+        self.logger.info("[UIManager] on_close: calling root.quit()")
         try:
             self.root.quit()
-            logging.info("on_close: root.quit() returned")
+            self.logger.info("[UIManager] on_close: root.quit() returned")
         except Exception:
-            logging.exception("on_close: exception in root.quit()")
+            self.logger.exception("[UIManager] on_close: exception in root.quit()")
 
-        logging.info("on_close: calling root.destroy()")
+        self.logger.info("[UIManager] on_close: calling root.destroy()")
         try:
             self.root.destroy()
-            logging.info("on_close: root.destroy() returned")
+            self.logger.info("[UIManager] on_close: root.destroy() returned")
         except Exception:
-            logging.exception("on_close: exception in root.destroy()")
+            self.logger.exception("[UIManager] on_close: exception in root.destroy()")
 
     def on_flavour_change(self, name):
+        """
+        Callback for flavour dropdown selection.
+        Updates the controller with the selected flavour.
+        """
+        self.logger.info(f"[UIManager] Flavour changed to: {name}")
         self.controller.select_flavour(name)
 
     def on_fast_speed_change(self, val):
+        """
+        Callback for changes to the fast speed slider.
+        Updates controller and UI label.
+        """
         speed = float(val)
+        self.logger.debug(f"[UIManager] Fast speed changed to: {speed:.2f} Hz")
         self.controller.speed_fast = speed
         self.fast_speed_label.config(text=f"{speed:.2f} Hz")
 
     def on_slow_speed_change(self, val):
+        """
+        Callback for changes to the slow speed slider.
+        Updates controller and UI label.
+        """
         speed = float(val)
+        self.logger.debug(f"[UIManager] Slow speed changed to: {speed:.2f} Hz")
         self.controller.speed_slow = speed
         self.slow_speed_label.config(text=f"{speed:.2f} Hz")
 
     def on_prime_press(self, event):
-        # Open both valves and start VFD at fast speed
+        """
+        Callback for pressing the Prime button.
+        Opens both valves and starts VFD at fast speed.
+        """
+        self.logger.info("[UIManager] Prime button pressed: opening both valves and starting VFD at fast speed")
         self.controller.valve1    = True
         self.controller.valve2    = True
         self.controller.vfd_state = 6
         self.controller.vfd_speed = int(self.controller.speed_fast * 100)
 
     def on_prime_release(self, event):
-        # Stop VFD and close valves
+        """
+        Callback for releasing the Prime button.
+        Stops VFD and closes both valves.
+        """
+        self.logger.info("[UIManager] Prime button released: stopping VFD and closing both valves")
         self.controller.vfd_state = 0
         self.controller.vfd_speed = 0
         self.controller.valve1    = False
         self.controller.valve2    = False
 
     def on_top_up_left_press(self, event):
-        # Open left valve and start VFD at fast speed
+        """
+        Callback for pressing the Top Up Left button.
+        Opens left valve and starts VFD at fast speed.
+        """
+        self.logger.info("[UIManager] Top Up Left pressed: opening left valve and starting VFD")
         self.controller.valve1 = True
         self.controller.vfd_state = 6
         self.controller.vfd_speed = int(self.controller.speed_fast * 100)
 
     def on_top_up_left_release(self, event):
-        # Stop VFD and close left valve
+        """
+        Callback for releasing the Top Up Left button.
+        Stops VFD and closes left valve.
+        """
+        self.logger.info("[UIManager] Top Up Left released: stopping VFD and closing left valve")
         self.controller.vfd_state = 0
         self.controller.vfd_speed = 0
         self.controller.valve1 = False
 
     def on_top_up_right_press(self, event):
-        # Open right valve and start VFD at fast speed
+        """
+        Callback for pressing the Top Up Right button.
+        Opens right valve and starts VFD at fast speed.
+        """
+        self.logger.info("[UIManager] Top Up Right pressed: opening right valve and starting VFD")
         self.controller.valve2 = True
         self.controller.vfd_state = 6
         self.controller.vfd_speed = int(self.controller.speed_fast * 100)
 
     def on_top_up_right_release(self, event):
-        # Stop VFD and close right valve
+        """
+        Callback for releasing the Top Up Right button.
+        Stops VFD and closes right valve.
+        """
+        self.logger.info("[UIManager] Top Up Right released: stopping VFD and closing right valve")
         self.controller.vfd_state = 0
         self.controller.vfd_speed = 0
         self.controller.valve2 = False
 
     def on_tab_changed(self, event):
-        """Enable filling in controller when Fill tab is selected."""
+        """
+        Callback when the notebook tab is changed.
+        Enables filling in controller when Fill tab is selected.
+        """
         selected = self.notebook.tab(self.notebook.select(), "text")
+        self.logger.info(f"[UIManager] Tab changed to: {selected}")
         if selected == "Fill":
+            self.logger.info("[UIManager] Enabling filling in controller")
             self.controller.enable_filling()
 
     def toggle_clean(self):
+        """
+        Toggles the cleaning cycle.
+        Starts or stops cleaning depending on current state.
+        """
         if not self.cleaning:
+            self.logger.info("[UIManager] Starting cleaning cycle")
             self.clean_button.config(text="Stop")
             self.controller.start_clean_cycle()
             self.cleaning = True
         else:
+            self.logger.info("[UIManager] Stopping cleaning cycle")
             self.controller.stop_clean_cycle()
             self.clean_button.config(text="Clean")
             self.cleaning = False
 
     def update_ui(self):
+        """
+        Periodically called method to update all dynamic UI elements.
+        Refreshes measurements, status, and watchdog indicator.
+        """
         # Stop scheduling updates once closing has begun
         if getattr(self, "_closing", False):
+            self.logger.debug("[UIManager] update_ui: UI closing, skipping update")
             return
         # Refresh dynamic labels
         self.status_label.config(text=self.controller._state)
@@ -369,14 +452,14 @@ class UIManager:
         self.total_weight_label.config(text=f"Total: {net_weight:.2f} kg")
         self.tare_weight_label.config(text=f"Tare: {self.controller._tare_weight:.2f} kg")
 
-        # Determine left pour: dynamic during left fill then persist
+        # Determine left pour: dynamic during left fill then persist last value
         if self.controller._state in (self.controller.STATE_FILL_LEFT_FAST, self.controller.STATE_FILL_LEFT_SLOW):
             left_pour = self.controller.actual_weight - self.controller._tare_weight
             self.controller.last_left_pour = left_pour
         else:
             left_pour = getattr(self.controller, 'last_left_pour', 0.0)
 
-        # Determine right pour: dynamic during right fill then persist
+        # Determine right pour: dynamic during right fill then persist last value
         if self.controller._state in (self.controller.STATE_FILL_RIGHT_FAST, self.controller.STATE_FILL_RIGHT_SLOW):
             right_pour = self.controller.actual_weight - self.controller._tare_weight
             self.controller.last_right_pour = right_pour
@@ -386,9 +469,9 @@ class UIManager:
         self.left_pour_label.config(text=f"Left Pour: {left_pour:.2f} kg")
         self.right_pour_label.config(text=f"Right Pour: {right_pour:.2f} kg")
         
-        # Watchdog indicator
+        # Watchdog indicator: blink green if healthy, red if failed
         if self.controller.watchdog_ok:
-            # blink green/bright-green at controlled interval
+            # Blink green/bright-green at controlled interval
             now = time.time()
             if now - self._last_blink_time >= self.blink_interval:
                 self._blink = not self._blink
@@ -404,6 +487,11 @@ class UIManager:
         self.root.after(30, self.update_ui)
 
     def on_clean_speed_change(self, val):
+        """
+        Callback for changes to the cleaning speed slider.
+        Updates controller and UI label.
+        """
         speed = float(val)
+        self.logger.debug(f"[UIManager] Cleaning speed changed to: {speed:.2f} Hz")
         self.controller.clean_speed = speed
         self.clean_speed_label.config(text=f"{speed:.2f} Hz")

@@ -249,17 +249,19 @@ class MachineController:
         """
         Signal threads to stop and wait for them. Ensure clean shutdown.
         """
+        
+        # Hardware shutdown (set class attributes only; Modbus threads handle hardware)
+        self.vfd_speed = 0
+        self.vfd_state = self.vfd_stop_cmd
+        self.valve1 = False
+        self.valve2 = False
+        
         # Ensure the filling loop unblocks if waiting for UI
         self._filling_event.set()
         self.kill_all.set()
         for t in self._threads:
             t.join()
         time.sleep(1)  # allow time for threads to exit
-        # Hardware shutdown (set class attributes only; Modbus threads handle hardware)
-        self.vfd_speed = 0
-        self.vfd_state = self.vfd_stop_cmd
-        self.valve1 = False
-        self.valve2 = False
 
         # Always disconnect MQTT
         try:
@@ -420,6 +422,7 @@ class MachineController:
             try:
                 self.handle_left_button()
                 self.handle_right_button()
+                # even when I'm holding down the button, occassionally the VFD is told to stop by something.
                 
                 w = self.actual_weight
 
