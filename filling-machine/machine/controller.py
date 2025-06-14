@@ -206,17 +206,29 @@ class MachineController:
         button_pressed = not left_button_line.get_value()
         manual_states = [self.STATE_WAITING_FOR_MOULD, self.STATE_WAIT_REMOVAL]
         if button_pressed and self._state in manual_states:
-            self.start_manual_topup("left")
+            # Only start if not already active from button (ignore if UI started)
+            if not self._left_button_active:
+                self._left_button_active = True
+                self.start_manual_topup("left")
         else:
-            self.stop_manual_topup("left")
+            # Only stop if we previously started from button (not if UI started)
+            if self._left_button_active:
+                self.stop_manual_topup("left")
+                self._left_button_active = False
 
     def handle_right_button(self):
         button_pressed = not right_button_line.get_value()
         manual_states = [self.STATE_WAITING_FOR_MOULD, self.STATE_WAIT_REMOVAL]
         if button_pressed and self._state in manual_states:
-            self.start_manual_topup("right")
+            # Only start if not already active from button (ignore if UI started)
+            if not self._right_button_active:
+                self._right_button_active = True
+                self.start_manual_topup("right")
         else:
-            self.stop_manual_topup("right")
+            # Only stop if we previously started from button (not if UI started)
+            if self._right_button_active:
+                self.stop_manual_topup("right")
+                self._right_button_active = False
 
     def start(self) -> None:
         """
