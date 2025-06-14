@@ -370,42 +370,34 @@ class UIManager:
     def on_top_up_left_press(self, event):
         """
         Callback for pressing the Top Up Left button.
-        Opens left valve and starts VFD at fast speed.
+        Starts manual top-up of the left valve via the controller.
         """
-        self.logger.info("[UIManager] Top Up Left pressed: opening left valve and starting VFD")
-        self.controller.valve1 = True
-        self.controller.vfd_state = 6
-        self.controller.vfd_speed = int(self.controller.speed_fast * 100)
+        self.logger.info("[UIManager] Top Up Left pressed: start_manual_topup('left')")
+        self.controller.start_manual_topup('left')
 
     def on_top_up_left_release(self, event):
         """
         Callback for releasing the Top Up Left button.
-        Stops VFD and closes left valve.
+        Stops manual top-up of the left valve via the controller.
         """
-        self.logger.info("[UIManager] Top Up Left released: stopping VFD and closing left valve")
-        self.controller.vfd_state = 0
-        self.controller.vfd_speed = 0
-        self.controller.valve1 = False
+        self.logger.info("[UIManager] Top Up Left released: stop_manual_topup('left')")
+        self.controller.stop_manual_topup('left')
 
     def on_top_up_right_press(self, event):
         """
         Callback for pressing the Top Up Right button.
-        Opens right valve and starts VFD at fast speed.
+        Starts manual top-up of the right valve via the controller.
         """
-        self.logger.info("[UIManager] Top Up Right pressed: opening right valve and starting VFD")
-        self.controller.valve2 = True
-        self.controller.vfd_state = 6
-        self.controller.vfd_speed = int(self.controller.speed_fast * 100)
+        self.logger.info("[UIManager] Top Up Right pressed: start_manual_topup('right')")
+        self.controller.start_manual_topup('right')
 
     def on_top_up_right_release(self, event):
         """
         Callback for releasing the Top Up Right button.
-        Stops VFD and closes right valve.
+        Stops manual top-up of the right valve via the controller.
         """
-        self.logger.info("[UIManager] Top Up Right released: stopping VFD and closing right valve")
-        self.controller.vfd_state = 0
-        self.controller.vfd_speed = 0
-        self.controller.valve2 = False
+        self.logger.info("[UIManager] Top Up Right released: stop_manual_topup('right')")
+        self.controller.stop_manual_topup('right')
 
     def on_tab_changed(self, event):
         """
