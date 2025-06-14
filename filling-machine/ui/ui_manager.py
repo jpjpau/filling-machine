@@ -372,7 +372,8 @@ class UIManager:
         Callback for pressing the Top Up Left button.
         Starts manual top-up of the left valve via the controller.
         """
-        self.logger.info("[UIManager] Top Up Left pressed: start_manual_topup('left')")
+        self.logger.info("[UIManager] [Top Up Left] Button pressed at %s", time.strftime("%Y-%m-%d %H:%M:%S"))
+        self.logger.info("[UIManager] [Top Up Left] Invoking controller.start_manual_topup('left', initiated_by_ui=True)")
         self.controller.start_manual_topup('left', initiated_by_ui=True)
 
     def on_top_up_left_release(self, event):
@@ -380,7 +381,8 @@ class UIManager:
         Callback for releasing the Top Up Left button.
         Stops manual top-up of the left valve via the controller.
         """
-        self.logger.info("[UIManager] Top Up Left released: stop_manual_topup('left')")
+        self.logger.info("[UIManager] [Top Up Left] Button released at %s", time.strftime("%Y-%m-%d %H:%M:%S"))
+        self.logger.info("[UIManager] [Top Up Left] Invoking controller.stop_manual_topup('left', initiated_by_ui=True)")
         self.controller.stop_manual_topup('left', initiated_by_ui=True)
 
     def on_top_up_right_press(self, event):
@@ -388,7 +390,8 @@ class UIManager:
         Callback for pressing the Top Up Right button.
         Starts manual top-up of the right valve via the controller.
         """
-        self.logger.info("[UIManager] Top Up Right pressed: start_manual_topup('right')")
+        self.logger.info("[UIManager] [Top Up Right] Button pressed at %s", time.strftime("%Y-%m-%d %H:%M:%S"))
+        self.logger.info("[UIManager] [Top Up Right] Invoking controller.start_manual_topup('right', initiated_by_ui=True)")
         self.controller.start_manual_topup('right', initiated_by_ui=True)
 
     def on_top_up_right_release(self, event):
@@ -396,7 +399,8 @@ class UIManager:
         Callback for releasing the Top Up Right button.
         Stops manual top-up of the right valve via the controller.
         """
-        self.logger.info("[UIManager] Top Up Right released: stop_manual_topup('right')")
+        self.logger.info("[UIManager] [Top Up Right] Button released at %s", time.strftime("%Y-%m-%d %H:%M:%S"))
+        self.logger.info("[UIManager] [Top Up Right] Invoking controller.stop_manual_topup('right', initiated_by_ui=True)")
         self.controller.stop_manual_topup('right', initiated_by_ui=True)
 
     def on_tab_changed(self, event):
