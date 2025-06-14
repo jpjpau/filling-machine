@@ -170,49 +170,39 @@ class MachineController:
         return 0.0 if self._mould_tare is None else self._mould_tare
 
     def start_manual_topup(self, side: str, initiated_by_ui: bool = False):
+        """Directly activate manual top-up for the given side, setting valve and VFD."""
         if side == "left":
-            if initiated_by_ui or not self._left_button_active:
-                logging.info(f"Manual LEFT top-up activated ({'UI' if initiated_by_ui else 'Button'}).")
-                self._left_button_active = True
-                self.valve1 = True
-                self.vfd_state = self.vfd_run_cmd
-                self.vfd_speed = int(self.speed_slow * 100)
+            logging.info(f"Manual LEFT top-up activated ({'UI' if initiated_by_ui else 'Button'}).")
+            self.valve1 = True
+            self.vfd_state = self.vfd_run_cmd
+            self.vfd_speed = int(self.speed_slow * 100)
         elif side == "right":
-            if initiated_by_ui or not self._right_button_active:
-                logging.info(f"Manual RIGHT top-up activated ({'UI' if initiated_by_ui else 'Button'}).")
-                self._right_button_active = True
-                self.valve2 = True
-                self.vfd_state = self.vfd_run_cmd
-                self.vfd_speed = int(self.speed_slow * 100)
+            logging.info(f"Manual RIGHT top-up activated ({'UI' if initiated_by_ui else 'Button'}).")
+            self.valve2 = True
+            self.vfd_state = self.vfd_run_cmd
+            self.vfd_speed = int(self.speed_slow * 100)
 
     def stop_manual_topup(self, side: str, initiated_by_ui: bool = False):
+        """Directly deactivate manual top-up for the given side, setting valve and VFD."""
         if side == "left":
-            if initiated_by_ui or self._left_button_active:
-                logging.info(f"Manual LEFT top-up deactivated ({'UI' if initiated_by_ui else 'Button'}).")
-                self.valve1 = False
-                self._left_button_active = False
+            logging.info(f"Manual LEFT top-up deactivated ({'UI' if initiated_by_ui else 'Button'}).")
+            self.valve1 = False
         elif side == "right":
-            if initiated_by_ui or self._right_button_active:
-                logging.info(f"Manual RIGHT top-up deactivated ({'UI' if initiated_by_ui else 'Button'}).")
-                self.valve2 = False
-                self._right_button_active = False
-
-        # Only stop VFD if both buttons inactive
-        if not self._left_button_active and not self._right_button_active:
-            self.vfd_state = self.vfd_stop_cmd
-            self.vfd_speed = 0
+            logging.info(f"Manual RIGHT top-up deactivated ({'UI' if initiated_by_ui else 'Button'}).")
+            self.valve2 = False
+        # Always stop the VFD and set speed to 0 when top-up is stopped
+        self.vfd_state = self.vfd_stop_cmd
+        self.vfd_speed = 0
             
     def handle_left_button(self):
         button_pressed = not left_button_line.get_value()
         manual_states = [self.STATE_WAITING_FOR_MOULD, self.STATE_WAIT_REMOVAL]
-        # Log the button state and internal state for debugging
         log_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
         logging.debug(
             f"[{log_time}] [GPIO] LEFT button raw value={left_button_line.get_value()} | interpreted_pressed={button_pressed} | "
             f"_left_button_active={self._left_button_active} | state={self._state}"
         )
         if button_pressed and self._state in manual_states:
-            # Only start if not already active from button (ignore if UI started)
             if not self._left_button_active:
                 logging.info(
                     f"[{log_time}] [GPIO] LEFT button PRESSED: activating manual top-up. _left_button_active={self._left_button_active}, state={self._state}"
@@ -220,7 +210,6 @@ class MachineController:
                 self._left_button_active = True
                 self.start_manual_topup("left")
         else:
-            # Only stop if we previously started from button (not if UI started)
             if self._left_button_active:
                 logging.info(
                     f"[{log_time}] [GPIO] LEFT button RELEASED: deactivating manual top-up. _left_button_active={self._left_button_active}, state={self._state}"
@@ -231,14 +220,12 @@ class MachineController:
     def handle_right_button(self):
         button_pressed = not right_button_line.get_value()
         manual_states = [self.STATE_WAITING_FOR_MOULD, self.STATE_WAIT_REMOVAL]
-        # Log the button state and internal state for debugging
         log_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
         logging.debug(
             f"[{log_time}] [GPIO] RIGHT button raw value={right_button_line.get_value()} | interpreted_pressed={button_pressed} | "
             f"_right_button_active={self._right_button_active} | state={self._state}"
         )
         if button_pressed and self._state in manual_states:
-            # Only start if not already active from button (ignore if UI started)
             if not self._right_button_active:
                 logging.info(
                     f"[{log_time}] [GPIO] RIGHT button PRESSED: activating manual top-up. _right_button_active={self._right_button_active}, state={self._state}"
@@ -246,7 +233,6 @@ class MachineController:
                 self._right_button_active = True
                 self.start_manual_topup("right")
         else:
-            # Only stop if we previously started from button (not if UI started)
             if self._right_button_active:
                 logging.info(
                     f"[{log_time}] [GPIO] RIGHT button RELEASED: deactivating manual top-up. _right_button_active={self._right_button_active}, state={self._state}"
