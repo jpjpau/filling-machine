@@ -169,44 +169,39 @@ class MachineController:
         """Weight of tray + moulds when first placed (before filling)."""
         return 0.0 if self._mould_tare is None else self._mould_tare
 
-    def start_manual_topup(self, side: str):
-        """
-        Shared logic to start manual top-up for the given side ('left' or 'right').
-        """
+    def start_manual_topup(self, side: str, initiated_by_ui: bool = False):
         if side == "left":
-            if not self._left_button_active:
-                logging.info("Manual LEFT top-up activated.")
+            if initiated_by_ui or not self._left_button_active:
+                logging.info(f"Manual LEFT top-up activated ({'UI' if initiated_by_ui else 'Button'}).")
                 self._left_button_active = True
                 self.valve1 = True
                 self.vfd_state = self.vfd_run_cmd
                 self.vfd_speed = int(self.speed_slow * 100)
         elif side == "right":
-            if not self._right_button_active:
-                logging.info("Manual RIGHT top-up activated.")
+            if initiated_by_ui or not self._right_button_active:
+                logging.info(f"Manual RIGHT top-up activated ({'UI' if initiated_by_ui else 'Button'}).")
                 self._right_button_active = True
                 self.valve2 = True
                 self.vfd_state = self.vfd_run_cmd
                 self.vfd_speed = int(self.speed_slow * 100)
 
-    def stop_manual_topup(self, side: str):
-        """
-        Shared logic to stop manual top-up for the given side ('left' or 'right').
-        """
+    def stop_manual_topup(self, side: str, initiated_by_ui: bool = False):
         if side == "left":
-            if self._left_button_active:
-                logging.info("Manual LEFT top-up deactivated.")
+            if initiated_by_ui or self._left_button_active:
+                logging.info(f"Manual LEFT top-up deactivated ({'UI' if initiated_by_ui else 'Button'}).")
                 self.valve1 = False
-                self.vfd_state = self.vfd_stop_cmd
-                self.vfd_speed = 0
                 self._left_button_active = False
         elif side == "right":
-            if self._right_button_active:
-                logging.info("Manual RIGHT top-up deactivated.")
+            if initiated_by_ui or self._right_button_active:
+                logging.info(f"Manual RIGHT top-up deactivated ({'UI' if initiated_by_ui else 'Button'}).")
                 self.valve2 = False
-                self.vfd_state = self.vfd_stop_cmd
-                self.vfd_speed = 0
                 self._right_button_active = False
 
+        # Only stop VFD if both buttons inactive
+        if not self._left_button_active and not self._right_button_active:
+            self.vfd_state = self.vfd_stop_cmd
+            self.vfd_speed = 0
+            
     def handle_left_button(self):
         button_pressed = not left_button_line.get_value()
         manual_states = [self.STATE_WAITING_FOR_MOULD, self.STATE_WAIT_REMOVAL]

@@ -373,7 +373,7 @@ class UIManager:
         Starts manual top-up of the left valve via the controller.
         """
         self.logger.info("[UIManager] Top Up Left pressed: start_manual_topup('left')")
-        self.controller.start_manual_topup('left')
+        self.controller.start_manual_topup('left', initiated_by_ui=True)
 
     def on_top_up_left_release(self, event):
         """
@@ -381,7 +381,7 @@ class UIManager:
         Stops manual top-up of the left valve via the controller.
         """
         self.logger.info("[UIManager] Top Up Left released: stop_manual_topup('left')")
-        self.controller.stop_manual_topup('left')
+        self.controller.stop_manual_topup('left', initiated_by_ui=True)
 
     def on_top_up_right_press(self, event):
         """
@@ -389,7 +389,7 @@ class UIManager:
         Starts manual top-up of the right valve via the controller.
         """
         self.logger.info("[UIManager] Top Up Right pressed: start_manual_topup('right')")
-        self.controller.start_manual_topup('right')
+        self.controller.start_manual_topup('right', initiated_by_ui=True)
 
     def on_top_up_right_release(self, event):
         """
@@ -397,7 +397,7 @@ class UIManager:
         Stops manual top-up of the right valve via the controller.
         """
         self.logger.info("[UIManager] Top Up Right released: stop_manual_topup('right')")
-        self.controller.stop_manual_topup('right')
+        self.controller.stop_manual_topup('right', initiated_by_ui=True)
 
     def on_tab_changed(self, event):
         """
