@@ -16,19 +16,11 @@ class Config:
                 raise ValueError(f"Invalid JSON in config file {full!r}: {e}")
         self._data = data
 
-    def get(self, key: str):
-        # Top‐level settings
-        if key in self._data:
-            return self._data[key]
-        # Flavour volumes
-        flavours = self._data.get("flavours", {})
-        if key in flavours:
-            return flavours[key]
-        # Mould tare weights
-        moulds = self._data.get("mould_weights", {})
-        if key in moulds:
-            return moulds[key]
-        raise KeyError(f"Config key {key!r} not found")
+    def get(self, key: str, default=None):
+        return self._data.get(key,
+               self._data.get("flavours", {}).get(key,
+               self._data.get("mould_weights", {}).get(key,
+               default)))
 
     @property
     def volumes(self):
