@@ -1,5 +1,6 @@
 {
   "mqttBroker": "192.168.15.6",
+  "adaptive_filling": true,
   "controller_interval": 0.05,
   "valve_start_delay": 0.5,
   "post_fill_delay": 0.5,

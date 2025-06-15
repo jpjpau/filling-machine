@@ -125,6 +125,9 @@ class MachineController:
         )
         self._watchdog_thread.start()
 
+        # Adaptive filling configuration
+        self.adaptive_filling = config.get("adaptive_filling", False)
+
     def select_flavour(self, name: str) -> None:
         """
         Change target volume and mould weight based on flavour.
@@ -478,10 +481,15 @@ class MachineController:
                             delay = self.config.get("mould_adjust_delay")
                             logging.info(f"Mould confirmed; waiting {delay} seconds for user adjustment before taring and filling")
                             time.sleep(delay)
-                            # Record tare and start left fill
-                            self._tare_weight = w
-                            self._left_tare = w
-                            self._mould_tare = w
+                            # Record tare and start left fill (average 5 readings)
+                            readings = []
+                            for _ in range(5):
+                                time.sleep(self._scale_interval)
+                                readings.append(self.actual_weight)
+                            tare_avg = sum(readings) / len(readings)
+                            self._tare_weight = tare_avg
+                            self._left_tare = tare_avg
+                            self._mould_tare = tare_avg
                             self.valve1     = True
                             time.sleep(self._valve_delay)
                             self.vfd_state  = self.vfd_run_cmd
@@ -502,6 +510,14 @@ class MachineController:
                 elif self._state == self.STATE_FILL_LEFT_SLOW:
                     logging.debug(f"Entering state: {self._state}, weight={w}")
                     self.vfd_speed = int(self.speed_slow * 100)
+                    # Adaptive speed fine-tuning if enabled
+                    if self.adaptive_filling:
+                        remaining = self.desired_volume - (w - self._tare_weight)
+                        logging.debug(f"Adaptive filling active. Remaining={remaining:.3f}kg")
+                        if remaining <= 0.08:
+                            self.vfd_speed = int(self.speed_slow * 100 * 0.25)
+                        elif remaining <= 0.15:
+                            self.vfd_speed = int(self.speed_slow * 100 * 0.5)
                     if (w - self._tare_weight) >= self.desired_volume:
                         # Stop VFD and close left valve immediately
                         self.vfd_speed = 0
@@ -511,11 +527,12 @@ class MachineController:
                         time.sleep(self._post_fill_delay)
 
                         # Allow scale readings to settle and average a few samples
-                        sample_count = 5
+                        sample_count = 10
                         readings = []
                         for _ in range(sample_count):
                             time.sleep(self._scale_interval)
                             readings.append(self.actual_weight - self._left_tare)
+                            time.sleep(self._scale_interval)
                         avg_pour = sum(readings) / len(readings)
                         # Record the raw averaged pour amount (allowing overshoot to be visible)
                         self._last_left_pour = avg_pour
@@ -527,8 +544,14 @@ class MachineController:
                 elif self._state == self.STATE_PREP_RIGHT:
                     logging.debug(f"Entering state: {self._state}, weight={w}")
                     self._consec_count = 0
-                    self._right_tare = w
-                    self._tare_weight  = w
+                    # Average right tare with 5 readings
+                    readings = []
+                    for _ in range(5):
+                        time.sleep(self._scale_interval)
+                        readings.append(self.actual_weight)
+                    tare_avg = sum(readings) / len(readings)
+                    self._right_tare = tare_avg
+                    self._tare_weight  = tare_avg
                     self.valve2        = True
                     self.vfd_state     = self.vfd_run_cmd
                     self.vfd_speed     = int(self.speed_fast * 100)
@@ -546,6 +569,14 @@ class MachineController:
                 elif self._state == self.STATE_FILL_RIGHT_SLOW:
                     logging.debug(f"Entering state: {self._state}, weight={w}")
                     self.vfd_speed = int(self.speed_slow * 100)
+                    # Adaptive speed fine-tuning if enabled
+                    if self.adaptive_filling:
+                        remaining = self.desired_volume - (w - self._tare_weight)
+                        logging.debug(f"Adaptive filling active. Remaining={remaining:.3f}kg")
+                        if remaining <= 0.08:
+                            self.vfd_speed = int(self.speed_slow * 100 * 0.25)
+                        elif remaining <= 0.15:
+                            self.vfd_speed = int(self.speed_slow * 100 * 0.5)
                     if (w - self._tare_weight) >= self.desired_volume:
                         # Stop VFD and close right valve immediately
                         self.vfd_speed = 0
@@ -555,11 +586,12 @@ class MachineController:
                         time.sleep(self._post_fill_delay)
 
                         # Allow scale readings to settle and average a few samples
-                        sample_count = 5
+                        sample_count = 10
                         readings = []
                         for _ in range(sample_count):
                             time.sleep(self._scale_interval)
                             readings.append(self.actual_weight - self._right_tare)
+                            time.sleep(self._scale_interval)
                         avg_pour = sum(readings) / len(readings)
                         # Record the raw averaged pour amount (allowing overshoot to be visible)
                         self._last_right_pour = avg_pour
