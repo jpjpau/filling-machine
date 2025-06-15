@@ -514,10 +514,10 @@ class MachineController:
                     if self.adaptive_filling:
                         remaining = self.desired_volume - (w - self._tare_weight)
                         logging.debug(f"Adaptive filling active. Remaining={remaining:.3f}kg")
-                        if remaining <= 0.08:
-                            self.vfd_speed = int(self.speed_slow * 100 * 0.25)
-                        elif remaining <= 0.15:
-                            self.vfd_speed = int(self.speed_slow * 100 * 0.5)
+                        if remaining <= 0.05:
+                            self.vfd_speed = int(self.speed_slow * 100 * 0.50)
+                        elif remaining <= 0.10:
+                            self.vfd_speed = int(self.speed_slow * 100 * 0.75)
                     if (w - self._tare_weight) >= self.desired_volume:
                         # Stop VFD and close left valve immediately
                         self.vfd_speed = 0
@@ -573,10 +573,10 @@ class MachineController:
                     if self.adaptive_filling:
                         remaining = self.desired_volume - (w - self._tare_weight)
                         logging.debug(f"Adaptive filling active. Remaining={remaining:.3f}kg")
-                        if remaining <= 0.08:
-                            self.vfd_speed = int(self.speed_slow * 100 * 0.25)
-                        elif remaining <= 0.15:
-                            self.vfd_speed = int(self.speed_slow * 100 * 0.5)
+                        if remaining <= 0.05:
+                            self.vfd_speed = int(self.speed_slow * 100 * 0.50)
+                        elif remaining <= 0.10:
+                            self.vfd_speed = int(self.speed_slow * 100 * 0.75)
                     if (w - self._tare_weight) >= self.desired_volume:
                         # Stop VFD and close right valve immediately
                         self.vfd_speed = 0
