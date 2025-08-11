@@ -257,6 +257,7 @@ class MachineController:
             self._threads.append(t)
             t.start()
         logging.info("MachineController: threads started")
+        self._filling_event.set()
         tare_thread = threading.Thread(target=self._initial_tare, daemon=True)
         tare_thread.start()
 
@@ -482,14 +483,7 @@ class MachineController:
         Full multi-stage fill state machine.
         """
         while not self.kill_all.is_set():
-            self._filling_event.wait()
-            if (
-                not self._filling_event.is_set()
-                or self._cleaning_active
-                or not self.ui_manager
-                or not self.ui_manager.is_fill_tab_active
-            ):
-                self._filling_event.clear()
+            if self._cleaning_active:
                 time.sleep(0.1)
                 continue
 
