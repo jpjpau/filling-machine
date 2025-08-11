@@ -81,6 +81,7 @@ class MachineController:
         # State machine internals
         self._state         = self.STATE_WAITING_FOR_MOULD
         self._tare_weight   = 0.0
+        self._baseline_empty = 0.0
         self._consec_count  = 0
 
         # Thread control
@@ -361,6 +362,7 @@ class MachineController:
                 tare_avg = self.actual_weight
 
             self._tare_weight = tare_avg
+            self._baseline_empty = tare_avg
             self._initial_tare_done = True
             logging.info(f"Initial tare complete: tare_weight={tare_avg:.3f} kg from {len(readings)} samples")
         except Exception:
@@ -442,11 +444,11 @@ class MachineController:
         if self._state != self.STATE_WAITING_FOR_MOULD:
             return False
         w = self.actual_weight
-        net = w - self._tare_weight
+        net_empty = w - self._baseline_empty
         logging.debug(
-            f"Detect mould check: raw={w:.3f} tare={self._tare_weight:.3f} net={net:.3f} target={self.mould_weight:.3f} tol={self._mould_tol:.3f}"
+            f"Detect mould check: raw={w:.3f} empty={self._baseline_empty:.3f} net_empty={net_empty:.3f} target={self.mould_weight:.3f} tol={self._mould_tol:.3f}"
         )
-        return abs(net - self.mould_weight) <= self.mould_weight * self._mould_tol
+        return abs(net_empty - self.mould_weight) <= self.mould_weight * self._mould_tol
 
     def _clean_loop(self) -> None:
         """
@@ -502,25 +504,26 @@ class MachineController:
                 # even when I'm holding down the button, occassionally the VFD is told to stop by something.
 
                 w = self.actual_weight
-                net = w - self._tare_weight
+                net_fill  = w - self._tare_weight
+                net_empty = w - self._baseline_empty
 
                 # 1) Waiting until a mould tray is placed
                 if self._state == self.STATE_WAITING_FOR_MOULD:
                     logging.debug(
-                        f"WAITING_FOR_MOULD: raw={w:.3f} tare={self._tare_weight:.3f} net={net:.3f} "
+                        f"WAITING_FOR_MOULD: raw={w:.3f} empty={self._baseline_empty:.3f} net_empty={net_empty:.3f} "
                         f"target={self.mould_weight:.3f} tol={self._mould_tol:.3f}"
                     )
-                    if abs(net - self.mould_weight) <= self.mould_weight * self._mould_tol:
+                    if abs(net_empty - self.mould_weight) <= self.mould_weight * self._mould_tol:
                         self._consec_count = 1
                         self._state = self.STATE_CONFIRMING_MOULD
 
                 # 1.1) Confirm consecutive mould readings
                 elif self._state == self.STATE_CONFIRMING_MOULD:
                     logging.debug(
-                        f"CONFIRMING_MOULD: raw={w:.3f} tare={self._tare_weight:.3f} net={net:.3f} "
+                        f"CONFIRMING_MOULD: raw={w:.3f} empty={self._baseline_empty:.3f} net_empty={net_empty:.3f} "
                         f"target={self.mould_weight:.3f} tol={self._mould_tol:.3f} count={self._consec_count}"
                     )
-                    if abs(net - self.mould_weight) <= self.mould_weight * self._mould_tol:
+                    if abs(net_empty - self.mould_weight) <= self.mould_weight * self._mould_tol:
                         self._consec_count += 1
                         if self._consec_count >= self._confirm_readings:
                             # Delay before starting fill to allow user to adjust moulds
@@ -650,9 +653,9 @@ class MachineController:
                 # 7) Wait for tray removal (multiple zero readings)
                 elif self._state == self.STATE_WAIT_REMOVAL:
                     logging.debug(
-                        f"WAIT_REMOVAL: raw={w:.3f} tare={self._tare_weight:.3f} net={net:.3f} tol={self._removal_tol:.3f} count={self._consec_count}"
+                        f"WAIT_REMOVAL: raw={w:.3f} empty={self._baseline_empty:.3f} net_empty={net_empty:.3f} tol={self._removal_tol:.3f} count={self._consec_count}"
                     )
-                    if abs(net) <= self._removal_tol:
+                    if abs(net_empty) <= self._removal_tol:
                         self._consec_count += 1
                         if self._consec_count >= self._confirm_removals:
                             # Clear retained pour and tare data
@@ -661,9 +664,10 @@ class MachineController:
                             self._left_tare       = None
                             self._right_tare      = None
                             self._mould_tare      = None
-                            # Re-tare for next cycle (shift baseline to current raw)
-                            self._tare_weight = w
-                            self._state       = self.STATE_WAITING_FOR_MOULD
+                            # Update baselines for next cycle
+                            self._baseline_empty = w
+                            self._tare_weight    = w
+                            self._state          = self.STATE_WAITING_FOR_MOULD
                     else:
                         self._consec_count = 0
 
