@@ -128,6 +128,11 @@ class MachineController:
         # Adaptive filling configuration
         self.adaptive_filling = config.get("adaptive_filling", False)
 
+        # Initial tare configuration
+        self.initial_tare_delay = config.get("initial_tare_delay", 2.0)
+        self.initial_tare_samples = config.get("initial_tare_samples", 10)
+        self._initial_tare_done = False
+
     def select_flavour(self, name: str) -> None:
         """
         Change target volume and mould weight based on flavour.
@@ -252,6 +257,8 @@ class MachineController:
             self._threads.append(t)
             t.start()
         logging.info("MachineController: threads started")
+        tare_thread = threading.Thread(target=self._initial_tare, daemon=True)
+        tare_thread.start()
 
     def start_clean_cycle(self) -> None:
         """
@@ -325,6 +332,31 @@ class MachineController:
                 logging.info("Watchdog: all threads healthy again.")
             self.watchdog_ok = all_good
             time.sleep(self.watchdog_interval)
+
+    def _initial_tare(self) -> None:
+        """Perform a one-off tare a few seconds after startup.
+        Waits `initial_tare_delay`, then averages `initial_tare_samples` readings
+        spaced by `_scale_interval` and sets `_tare_weight` to that average.
+        """
+        try:
+            # Allow other threads (especially scale loop) to start and stabilise
+            time.sleep(self.initial_tare_delay)
+
+            readings = []
+            for _ in range(int(self.initial_tare_samples)):
+                time.sleep(self._scale_interval)
+                readings.append(self.actual_weight)
+
+            if readings:
+                tare_avg = sum(readings) / len(readings)
+            else:
+                tare_avg = self.actual_weight
+
+            self._tare_weight = tare_avg
+            self._initial_tare_done = True
+            logging.info(f"Initial tare complete: tare_weight={tare_avg:.3f} kg from {len(readings)} samples")
+        except Exception:
+            logging.exception("Initial tare failed")
 
     def _vfd_loop(self) -> None:
         """
@@ -449,19 +481,23 @@ class MachineController:
         """
         Full multi-stage fill state machine.
         """
-        # Wait until UI triggers filling
-        self._filling_event.wait()
         while not self.kill_all.is_set():
-            # Prevent filling logic if cleaning is active
-            if self._cleaning_active:
-                time.sleep(self._read_interval)
-                continue  # Skip filling state machine updates
-            
+            self._filling_event.wait()
+            if (
+                not self._filling_event.is_set()
+                or self._cleaning_active
+                or not self.ui_manager
+                or not self.ui_manager.is_fill_tab_active
+            ):
+                self._filling_event.clear()
+                time.sleep(0.1)
+                continue
+
             try:
                 self.handle_left_button()
                 self.handle_right_button()
                 # even when I'm holding down the button, occassionally the VFD is told to stop by something.
-                
+
                 w = self.actual_weight
 
                 # 1) Waiting until a mould tray is placed

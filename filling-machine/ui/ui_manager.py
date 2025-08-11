@@ -16,6 +16,9 @@ class UIManager:
         self.controller = controller
         self.cleaning = False
 
+        # Track the currently active tab, default to "cleaning"
+        self.active_tab = "cleaning"
+
         # Configure logger for UIManager
         self.logger = logging.getLogger("UIManager")
         self.logger.debug("Initializing UIManager")
@@ -407,9 +410,12 @@ class UIManager:
         """
         Callback when the notebook tab is changed.
         Enables filling in controller when Fill tab is selected.
+        Updates the active_tab instance variable.
         """
         selected = self.notebook.tab(self.notebook.select(), "text")
+        self.active_tab = selected.lower()
         self.logger.info(f"[UIManager] Tab changed to: {selected}")
+        self.logger.info(f"[UIManager] Active tab set to: {self.active_tab}")
         if selected == "Fill":
             self.logger.info("[UIManager] Enabling filling in controller")
             self.controller.enable_filling()
@@ -481,6 +487,11 @@ class UIManager:
         
         # Schedule next update
         self.root.after(30, self.update_ui)
+
+    @property
+    def is_fill_tab_active(self) -> bool:
+        current_tab = self.notebook.tab(self.notebook.select(), "text")
+        return current_tab.lower() == "fill"
 
     def on_clean_speed_change(self, val):
         """
