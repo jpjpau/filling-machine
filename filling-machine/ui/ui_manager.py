@@ -320,6 +320,39 @@ class UIManager:
         except Exception:
             self.logger.exception("[UIManager] on_close: exception in root.destroy()")
 
+    def on_fill_tab_selected(self) -> None:
+        """Called by UI when Filling tab is selected: start calibration."""
+        self._filling_event.clear()
+        self._filling_enabled = False
+        self._calibration_state = "await_empty"
+        self._session_tare = None
+        self._session_mould_weight = None
+        self._publish_calibration_state(instruction="Ensure scale is empty, then press Calibrate.")
+
+    def calibrate_button_pressed(self) -> None:
+        """Called by UI when operator presses the Calibrate button."""
+        try:
+            if self._calibration_state == "await_empty":
+                if self._check_empty_and_sample_tare():
+                    self._calibration_state = "await_mould"
+                    self._publish_calibration_state(instruction="Place empty mould, then press Calibrate.")
+            elif self._calibration_state == "await_mould":
+                avg = self._average_weight(self.calibration_samples)
+                if self._session_tare is None:
+                    self._session_tare = avg  # fallback
+                self._session_mould_weight = max(0.0, avg - self._session_tare)
+                logging.info(f"Calibration: session tare={self._session_tare:.3f} kg, "
+                            f"mould={self._session_mould_weight:.3f} kg")
+                self._calibration_state = "done"
+                self._filling_enabled = True
+                self._filling_event.set()
+                self._publish_calibration_state(instruction="Calibration complete. Ready to fill.")
+            else:
+                logging.debug(f"Calibration pressed while state={self._calibration_state}; ignoring.")
+        except Exception:
+            logging.exception("Calibration step failed")
+            self._publish_calibration_error("Calibration failed; see logs.")
+
     def on_flavour_change(self, name):
         """
         Callback for flavour dropdown selection.
