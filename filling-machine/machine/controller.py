@@ -650,7 +650,7 @@ class MachineController:
                         self._state = self.STATE_WAIT_REMOVAL
                         self._consec_count = 0
 
-                # 7) Wait for tray removal (multiple zero readings) 
+                # 7) Wait for tray removal (multiple zero readings)
                 elif self._state == self.STATE_WAIT_REMOVAL:
                     logging.debug(
                         f"WAIT_REMOVAL: raw={w:.3f} empty={self._baseline_empty:.3f} net_empty={net_empty:.3f} tol={self._removal_tol:.3f} count={self._consec_count}"
